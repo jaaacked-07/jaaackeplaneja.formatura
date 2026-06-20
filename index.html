@@ -247,6 +247,23 @@ textarea.input{resize:vertical;min-height:64px}
   .hide-sm{display:none!important}
 }
 
+/* ---------- Login ---------- */
+.login{position:fixed;inset:0;z-index:500;display:grid;place-items:center;padding:24px;
+  background:radial-gradient(130% 120% at 50% -10%,var(--accent-soft),var(--bg) 62%)}
+.login-card{background:var(--surface);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow-lg);
+  padding:36px 30px 30px;max-width:404px;width:100%;text-align:center;animation:slideup .4s cubic-bezier(.2,.9,.2,1)}
+.login-card .cap{width:64px;height:64px;border-radius:19px;background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  display:grid;place-items:center;font-size:31px;margin:0 auto 18px;box-shadow:var(--shadow)}
+.login-card h1{font-size:22px;font-weight:760;letter-spacing:-.5px;margin-bottom:9px}
+.login-card p{font-size:13.5px;line-height:1.55}
+.login-card input{margin-top:18px;text-align:center;font-size:16px;padding:13px}
+.login-users{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.login-users .chip{cursor:pointer;padding:7px 13px;font-size:13px;border:1px solid var(--line-2)}
+.login-users .chip:hover{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
+.userbox{display:flex;align-items:center;gap:9px;width:100%}
+.uava{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  color:#fff;display:grid;place-items:center;font-weight:700;flex-shrink:0;box-shadow:var(--shadow)}
+
 /* ---------- Print / PDF report ---------- */
 #report{display:none}
 @media print{
@@ -284,10 +301,7 @@ textarea.input{resize:vertical;min-height:64px}
       </div>
     </div>
     <nav id="nav"></nav>
-    <div class="sidebar-foot">
-      <button class="btn ghost sm" style="flex:1" onclick="UI.go('config')">⚙️ Configurações</button>
-      <button class="icon-btn" id="themeBtn" title="Tema" onclick="UI.toggleTheme()">🌙</button>
-    </div>
+    <div class="sidebar-foot" id="sidebarFoot"></div>
   </aside>
 
   <!-- MAIN -->
@@ -3642,18 +3656,59 @@ textarea.input{resize:vertical;min-height:64px}
    ===================================================================== */
 (function(){
 "use strict";
-const KEY="formaturaPlanner_v1";
+const KEY_PREFIX="formaturaPlanner_v1::";
+const KEY_USER="formaturaPlanner_currentUser";
+const LEGACY_KEY="formaturaPlanner_v1";
 const SEED=JSON.parse(document.getElementById("seed-data").textContent);
 
-/* ---------- State ---------- */
-let S=load();
+/* ---------- State (multiusuario, dados separados por nome no localStorage) ---------- */
+let S=null;
+let currentUser=null;
+try{currentUser=localStorage.getItem(KEY_USER)||null;}catch(e){}
 let ui={tab:"dash",itemFilter:{q:"",cat:"",pri:"",st:""},itemSort:"prioridade",itemView:"lista",
         guestFilter:{q:"",grupo:"",st:"",cidade:""},guestView:"tabela",simSave:null,simStart:null};
 
-function load(){
-  try{const raw=localStorage.getItem(KEY);if(raw)return migrate(JSON.parse(raw));}catch(e){}
-  return clone(SEED);
+function norm(u){return String(u||"").trim().toLowerCase().replace(/\s+/g,"-").replace(/[^a-z0-9\-_]/g,"")||"user";}
+function dataKey(u){return KEY_PREFIX+norm(u);}
+function templateData(name){ // planejamento limpo e reutilizavel para um novo formando
+  return {config:Object.assign(clone(SEED.config),{nome:name||"",curso:"",instituicao:"",dataFormatura:"",
+      economiaMensal:200,saldoAtual:0,metaFinanceira:0,frase:"Rumo \u00e0 formatura! \ud83c\udf93"}),
+    categorias:clone(SEED.categorias),gruposConvidados:clone(SEED.gruposConvidados),
+    items:clone(SEED.items.filter(i=>i.sugerido)).map((i,ix)=>Object.assign(i,{id:"it"+(ix+1),valorReal:null,status:"pendente",dataCompra:""})),
+    guests:[]};
 }
+function loadUser(u){
+  try{const raw=localStorage.getItem(dataKey(u));if(raw)return migrate(JSON.parse(raw));}catch(e){}
+  if(norm(u)===norm(SEED.config.nome)){ // formando(a) original -> importa os dados da planilha
+    try{const leg=localStorage.getItem(LEGACY_KEY);if(leg){const d=migrate(JSON.parse(leg));d.config.nome=u;return d;}}catch(e){}
+    const d=clone(SEED);d.config.nome=u;return d;
+  }
+  return templateData(u);
+}
+function listUsers(){const out=[];try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);
+  if(k&&k.indexOf(KEY_PREFIX)===0){let nm=k.slice(KEY_PREFIX.length);try{const d=JSON.parse(localStorage.getItem(k));if(d&&d.config&&d.config.nome)nm=d.config.nome;}catch(e){}out.push({slug:k.slice(KEY_PREFIX.length),name:nm});}}}catch(e){}return out;}
+function doLogin(name){name=String(name||"").trim();if(!name){toast("Digite um nome para entrar");return;}
+  currentUser=name;try{localStorage.setItem(KEY_USER,name);}catch(e){}
+  S=loadUser(name);save();hideLogin();ui.tab="dash";applyAccent();render();try{window.scrollTo(0,0);}catch(e){}}
+function doLogout(){try{localStorage.removeItem(KEY_USER);}catch(e){}currentUser=null;S=null;closeModal();showLogin();}
+function showLogin(){
+  const users=listUsers();
+  let el=document.getElementById("loginScreen");
+  if(!el){el=document.createElement("div");el.id="loginScreen";document.body.appendChild(el);}
+  el.className="login";
+  el.innerHTML=`<div class="login-card">
+     <div class="cap">\ud83c\udf93</div>
+     <h1>Planejador de Formatura</h1>
+     <p class="muted">Entre com seu nome para abrir o seu planejamento. Cada pessoa tem os dados salvos separadamente neste navegador \u2014 sem se misturar.</p>
+     <input id="loginName" class="input" placeholder="Digite seu nome\u2026" autocomplete="off" maxlength="40">
+     <button class="btn primary" style="width:100%;justify-content:center;margin-top:12px" onclick="UI.login()">Entrar \u2192</button>
+     ${users.length?`<div style="margin-top:18px"><div class="muted" style="font-size:12px;margin-bottom:9px">Continuar como:</div><div class="login-users">${users.map(u=>`<button class="chip" onclick="UI.login('${esc(u.slug)}')">\ud83d\udc64 ${esc(u.name)}</button>`).join("")}</div></div>`:""}
+     <p class="muted" style="font-size:11.5px;margin-top:20px;line-height:1.5">\ud83d\udd12 Seus dados ficam salvos somente neste navegador, de forma privada. Para usar em outro aparelho, exporte um backup em <b>Relat\u00f3rios</b> e importe l\u00e1.</p>
+  </div>`;
+  document.body.style.overflow="hidden";
+  setTimeout(()=>{const n=document.getElementById("loginName");if(n){n.focus();n.onkeydown=e=>{if(e.key==="Enter")doLogin(n.value);};}},60);
+}
+function hideLogin(){const el=document.getElementById("loginScreen");if(el)el.remove();document.body.style.overflow="";}
 function migrate(d){ // ensure shape
   d.config=Object.assign(clone(SEED.config),d.config||{});
   d.categorias=d.categorias||clone(SEED.categorias);
@@ -3662,7 +3717,7 @@ function migrate(d){ // ensure shape
   return d;
 }
 let saveT;
-function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify({
+function save(){if(!currentUser||!S)return;clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(dataKey(currentUser),JSON.stringify({
   config:S.config,categorias:S.categorias,gruposConvidados:S.gruposConvidados,items:S.items,guests:S.guests
 }));}catch(e){toast("Erro ao salvar (armazenamento cheio?)");}},120);}
 function clone(o){return JSON.parse(JSON.stringify(o));}
@@ -3798,7 +3853,13 @@ function render(){
     </button>`).join("");
   const cur=NAV.find(n=>n.id===ui.tab)||NAV[0];
   document.getElementById("pageTitle").textContent=cur.t;
-  document.getElementById("themeBtn").textContent=document.documentElement.dataset.theme==="dark"?"☀️":"🌙";
+  const _dark=document.documentElement.dataset.theme==="dark";
+  document.getElementById("sidebarFoot").innerHTML=`<div class="userbox">
+    <span class="uava">${esc((S.config.nome||currentUser||"?").trim().slice(0,1).toUpperCase())}</span>
+    <div style="min-width:0;flex:1"><div style="font-weight:650;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(S.config.nome||currentUser||"")}</div><div class="tag-cat" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(S.config.curso||"")}</div></div>
+    <button class="icon-btn" style="width:32px;height:32px" title="Tema claro/escuro" onclick="UI.toggleTheme()">${_dark?"☀️":"🌙"}</button>
+    <button class="icon-btn" style="width:32px;height:32px" title="Sair / trocar usuário" onclick="UI.logout()">⎋</button>
+  </div>`;
   const v=document.getElementById("view"); const act=document.getElementById("topActions");
   act.innerHTML="";
   ({dash:viewDash,fin:viewFin,items:viewItems,timeline:viewTimeline,strategy:viewStrategy,
@@ -4599,6 +4660,8 @@ function openNav(){document.getElementById("sidebar").classList.add("open");docu
 function closeNav(){document.getElementById("sidebar").classList.remove("open");document.getElementById("scrim").classList.remove("show");}
 window.UI={
   go(t){ui.tab=t;closeNav();render();window.scrollTo(0,0);},
+  login(name){doLogin(name||(document.getElementById("loginName")?document.getElementById("loginName").value:""));},
+  logout(){if(confirm("Sair e trocar de usuário? Seus dados continuam salvos neste navegador.")){doLogout();}},
   openNav(){openNav();},
   closeNav(){closeNav();},
   toggleTheme(){const r=document.documentElement;const d=r.dataset.theme==="dark"?"light":"dark";r.dataset.theme=d;
@@ -4645,8 +4708,8 @@ function hexA(hex,a){const h=hex.replace("#","");const r=parseInt(h.slice(0,2),1
 /* ---------- boot ---------- */
 (function boot(){
   try{const t=localStorage.getItem("formaturaTheme");if(t)document.documentElement.dataset.theme=t;}catch(e){}
-  applyAccent();
-  render();
+  if(currentUser){S=loadUser(currentUser);applyAccent();render();}
+  else{showLogin();}
 })();
 })();
 </script>
