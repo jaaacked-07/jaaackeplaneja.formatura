@@ -1,0 +1,4654 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="Planejador completo de formatura — organize compras, orçamento, cronograma e convidados.">
+<title>Planejador de Formatura</title>
+<style>
+/* =========================================================
+   DESIGN SYSTEM  — premium / minimalista (Notion · Linear · Apple)
+   ========================================================= */
+:root{
+  --accent:#8E2C4E;            /* bordô elegante */
+  --accent-2:#C8A951;          /* dourado */
+  --accent-soft:#f7e9ee;
+  --bg:#faf9f7;
+  --surface:#ffffff;
+  --surface-2:#f4f3f0;
+  --text:#1c1b1a;
+  --text-2:#6b6863;
+  --text-3:#9a968f;
+  --line:#eceae6;
+  --line-2:#e2dfd9;
+  --ok:#2f8f5b; --ok-soft:#e7f3ec;
+  --warn:#c9831f; --warn-soft:#fbf0dd;
+  --bad:#c0413f; --bad-soft:#fbe9e8;
+  --info:#3a6ea5; --info-soft:#e8f0f8;
+  --radius:16px; --radius-sm:11px; --radius-xs:8px;
+  --shadow:0 1px 2px rgba(20,18,16,.04),0 8px 24px -12px rgba(20,18,16,.12);
+  --shadow-lg:0 12px 40px -12px rgba(20,18,16,.22);
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
+}
+html[data-theme="dark"]{
+  --accent:#e088a6; --accent-2:#d9bd6e; --accent-soft:#34232a;
+  --bg:#161413; --surface:#1f1c1b; --surface-2:#262220;
+  --text:#f3f0ec; --text-2:#b3ada5; --text-3:#807a72;
+  --line:#2c2826; --line-2:#383330;
+  --ok:#5cc285; --ok-soft:#1e2c24; --warn:#e2ab5c; --warn-soft:#2e271a;
+  --bad:#e87b78; --bad-soft:#2e1e1d; --info:#7aa7d6; --info-soft:#1c2530;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6);
+  --shadow-lg:0 14px 44px -12px rgba(0,0,0,.7);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;line-height:1.5;
+  font-size:15px;overflow-x:hidden}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;font-size:15px;color:var(--text)}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:20px;border:3px solid var(--bg)}
+
+/* ---------- Layout ---------- */
+.app{display:grid;grid-template-columns:248px 1fr;min-height:100vh}
+.sidebar{position:sticky;top:0;height:100vh;background:var(--surface);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;padding:20px 14px;gap:4px;overflow-y:auto}
+.brand{display:flex;align-items:center;gap:11px;padding:6px 8px 16px}
+.brand .cap{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  display:grid;place-items:center;color:#fff;font-size:19px;flex-shrink:0;box-shadow:var(--shadow)}
+.brand b{font-size:15px;font-weight:650;letter-spacing:-.2px;display:block;line-height:1.15}
+.brand small{font-size:12px;color:var(--text-3)}
+.nav-label{font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.6px;padding:14px 10px 6px}
+.nav-item{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:var(--radius-sm);
+  color:var(--text-2);font-size:14.5px;font-weight:500;width:100%;text-align:left;transition:.15s;position:relative}
+.nav-item:hover{background:var(--surface-2);color:var(--text)}
+.nav-item.active{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.nav-item .ico{width:19px;height:19px;flex-shrink:0;display:grid;place-items:center}
+.nav-item .badge{margin-left:auto;font-size:11px;background:var(--surface-2);color:var(--text-2);
+  padding:1px 7px;border-radius:20px;font-weight:600}
+.nav-item.active .badge{background:var(--accent);color:#fff}
+.sidebar-foot{margin-top:auto;padding-top:14px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:center}
+
+.main{min-width:0;display:flex;flex-direction:column}
+.topbar{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 86%,transparent);
+  backdrop-filter:saturate(180%) blur(14px);-webkit-backdrop-filter:saturate(180%) blur(14px);
+  border-bottom:1px solid var(--line);padding:14px 28px;display:flex;align-items:center;gap:14px}
+.topbar h1{font-size:20px;font-weight:680;letter-spacing:-.4px}
+.topbar .sub{font-size:13px;color:var(--text-3);margin-top:1px}
+.topbar .spacer{flex:1}
+.menu-btn{display:none}
+.content{padding:24px 28px 80px;max-width:1240px;width:100%;margin:0 auto;animation:fade .35s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 15px;border-radius:var(--radius-sm);
+  font-size:14px;font-weight:600;background:var(--surface);border:1px solid var(--line-2);color:var(--text);
+  transition:.15s;white-space:nowrap}
+.btn:hover{background:var(--surface-2);border-color:var(--text-3)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.ghost:hover{background:var(--surface-2)}
+.btn.sm{padding:6px 11px;font-size:13px}
+.btn.danger{color:var(--bad);border-color:var(--bad-soft)}
+.btn.danger:hover{background:var(--bad-soft)}
+.icon-btn{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;border:1px solid var(--line-2);background:var(--surface)}
+.icon-btn:hover{background:var(--surface-2)}
+
+/* ---------- Cards ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+.grid{display:grid;gap:16px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 18px 16px;
+  box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi .lab{font-size:12.5px;color:var(--text-2);font-weight:550;display:flex;align-items:center;gap:7px}
+.kpi .val{font-size:27px;font-weight:720;letter-spacing:-.8px;margin-top:8px;line-height:1}
+.kpi .hint{font-size:12px;color:var(--text-3);margin-top:6px}
+.kpi .dot{width:9px;height:9px;border-radius:50%}
+.section-title{font-size:13px;font-weight:650;color:var(--text-2);text-transform:uppercase;letter-spacing:.5px;
+  margin:30px 2px 14px;display:flex;align-items:center;gap:9px}
+.section-title:first-child{margin-top:6px}
+
+/* ---------- Badges / chips ---------- */
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:3px 9px;border-radius:20px;
+  background:var(--surface-2);color:var(--text-2);white-space:nowrap}
+.chip.alta{background:var(--bad-soft);color:var(--bad)}
+.chip.media{background:var(--warn-soft);color:var(--warn)}
+.chip.baixa{background:var(--info-soft);color:var(--info)}
+.chip.comprado{background:var(--ok-soft);color:var(--ok)}
+.chip.pendente{background:var(--surface-2);color:var(--text-2)}
+.chip.confirmado{background:var(--ok-soft);color:var(--ok)}
+.chip.recusado{background:var(--bad-soft);color:var(--bad)}
+.chip.aguardando{background:var(--warn-soft);color:var(--warn)}
+.chip.vip{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff}
+.chip.sug{background:var(--accent-soft);color:var(--accent)}
+.tag-cat{font-size:11.5px;color:var(--text-3);font-weight:600}
+
+/* ---------- Progress ---------- */
+.bar{height:8px;border-radius:20px;background:var(--surface-2);overflow:hidden}
+.bar>span{display:block;height:100%;border-radius:20px;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .6s cubic-bezier(.2,.8,.2,1)}
+
+/* ---------- Tables ---------- */
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--text-3);
+  font-weight:650;padding:12px 14px;border-bottom:1px solid var(--line);white-space:nowrap;background:var(--surface)}
+td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr{transition:.12s}
+tbody tr:hover{background:var(--surface-2)}
+th.sortable{cursor:pointer;user-select:none}
+th.sortable:hover{color:var(--text)}
+
+/* ---------- Forms ---------- */
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field label{font-size:13px;font-weight:600;color:var(--text-2)}
+.input,select.input,textarea.input{width:100%;padding:10px 12px;border:1px solid var(--line-2);border-radius:var(--radius-xs);
+  background:var(--surface);transition:.15s}
+.input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+textarea.input{resize:vertical;min-height:64px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
+.search{flex:1;min-width:180px;position:relative}
+.search input{width:100%;padding:9px 12px 9px 36px;border:1px solid var(--line-2);border-radius:var(--radius-sm);background:var(--surface)}
+.search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text-3)}
+.seg{display:inline-flex;background:var(--surface-2);border-radius:10px;padding:3px;gap:2px}
+.seg button{padding:6px 13px;border-radius:8px;font-size:13px;font-weight:600;color:var(--text-2)}
+.seg button.on{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+
+/* ---------- Modal ---------- */
+.overlay{position:fixed;inset:0;background:rgba(20,18,16,.4);backdrop-filter:blur(3px);z-index:100;
+  display:flex;align-items:flex-end;justify-content:center;padding:0;animation:fade .2s}
+@media(min-width:700px){.overlay{align-items:center;padding:24px}}
+.modal{background:var(--surface);width:100%;max-width:620px;max-height:92vh;overflow-y:auto;
+  border-radius:20px 20px 0 0;box-shadow:var(--shadow-lg);animation:slideup .28s cubic-bezier(.2,.9,.2,1)}
+@media(min-width:700px){.modal{border-radius:20px}}
+@keyframes slideup{from{transform:translateY(30px);opacity:.6}to{transform:none;opacity:1}}
+.modal-head{display:flex;align-items:center;gap:10px;padding:18px 20px;border-bottom:1px solid var(--line);
+  position:sticky;top:0;background:var(--surface);z-index:2}
+.modal-head h3{font-size:17px;font-weight:680;letter-spacing:-.3px}
+.modal-body{padding:20px}
+.modal-foot{display:flex;gap:10px;justify-content:flex-end;padding:16px 20px;border-top:1px solid var(--line);
+  position:sticky;bottom:0;background:var(--surface)}
+
+/* ---------- Timeline ---------- */
+.tl{position:relative;padding-left:30px}
+.tl::before{content:"";position:absolute;left:9px;top:6px;bottom:6px;width:2px;background:var(--line-2)}
+.tl-item{position:relative;padding:0 0 22px}
+.tl-dot{position:absolute;left:-29px;top:2px;width:20px;height:20px;border-radius:50%;background:var(--surface);
+  border:2px solid var(--accent);display:grid;place-items:center;font-size:10px}
+.tl-item.done .tl-dot{background:var(--ok);border-color:var(--ok);color:#fff}
+.tl-item.warn .tl-dot{background:var(--warn);border-color:var(--warn);color:#fff}
+.tl-item.grad .tl-dot{background:linear-gradient(135deg,var(--accent),var(--accent-2));border-color:transparent;color:#fff}
+.tl-date{font-size:12px;font-weight:650;color:var(--text-3)}
+.tl-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px 14px;margin-top:5px;box-shadow:var(--shadow)}
+
+/* ---------- Misc ---------- */
+.muted{color:var(--text-3)}
+.empty{text-align:center;padding:50px 20px;color:var(--text-3)}
+.empty .big{font-size:40px;margin-bottom:10px}
+.row{display:flex;align-items:center;gap:10px}
+.wrap{flex-wrap:wrap}
+.between{justify-content:space-between}
+.donut-wrap{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.legend{display:flex;flex-direction:column;gap:9px}
+.legend div{display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--text-2)}
+.legend .sw{width:12px;height:12px;border-radius:4px}
+.opt-list{margin-top:10px;border-top:1px dashed var(--line-2);padding-top:10px;display:flex;flex-direction:column;gap:8px}
+.opt{font-size:13px;color:var(--text-2);display:flex;gap:8px;align-items:baseline}
+.opt.fav{color:var(--text);font-weight:600}
+.opt .pr{font-variant-numeric:tabular-nums;font-weight:600;color:var(--accent);flex-shrink:0}
+.card-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:14px}
+.gcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);position:relative}
+.gcard.norsvp{border-left:3px solid var(--warn)}
+.gcard.vip{border-left:3px solid var(--accent-2)}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--bg);
+  padding:11px 18px;border-radius:12px;font-size:14px;font-weight:600;box-shadow:var(--shadow-lg);opacity:0;
+  transition:.3s;z-index:300;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.switch{position:relative;display:inline-block;width:42px;height:24px;flex-shrink:0}
+.switch input{display:none}
+.switch span{position:absolute;inset:0;background:var(--line-2);border-radius:20px;transition:.2s}
+.switch span::before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.switch input:checked+span{background:var(--accent)}
+.switch input:checked+span::before{transform:translateX(18px)}
+.pill-row{display:flex;gap:8px;flex-wrap:wrap}
+.minibar{display:flex;align-items:center;gap:8px}
+.minibar .bar{flex:1;min-width:60px}
+.note{background:var(--surface-2);border-radius:var(--radius-sm);padding:12px 14px;font-size:13.5px;color:var(--text-2);border:1px solid var(--line)}
+.alert{display:flex;gap:11px;padding:13px 15px;border-radius:var(--radius-sm);font-size:14px;align-items:flex-start}
+.alert.warn{background:var(--warn-soft);color:var(--warn)}
+.alert.bad{background:var(--bad-soft);color:var(--bad)}
+.alert.ok{background:var(--ok-soft);color:var(--ok)}
+.alert.info{background:var(--info-soft);color:var(--info)}
+.color-dot{width:26px;height:26px;border-radius:8px;border:2px solid var(--line-2);cursor:pointer}
+.color-dot.on{border-color:var(--text);box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--text)}
+
+/* ---------- Mobile ---------- */
+@media(max-width:920px){
+  .app{grid-template-columns:1fr}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:270px;z-index:200;transform:translateX(-100%);
+    transition:transform .28s cubic-bezier(.2,.9,.2,1);box-shadow:var(--shadow-lg)}
+  .sidebar.open{transform:none}
+  .scrim{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:150;opacity:0;pointer-events:none;transition:.25s}
+  .scrim.show{opacity:1;pointer-events:auto}
+  .menu-btn{display:grid}
+  .topbar{padding:12px 16px}
+  .topbar h1{font-size:17px}
+  .content{padding:18px 16px 90px}
+  .form-row{grid-template-columns:1fr}
+  .kpi .val{font-size:23px}
+}
+@media(max-width:520px){
+  .kpis{grid-template-columns:1fr 1fr}
+  .hide-sm{display:none!important}
+}
+
+/* ---------- Print / PDF report ---------- */
+#report{display:none}
+@media print{
+  @page{margin:14mm}
+  .sidebar,.topbar,.scrim,.menu-btn,.no-print,.overlay{display:none!important}
+  .app{display:block}
+  .content{display:none!important}
+  body{background:#fff;font-size:12px}
+  #report{display:block!important;color:#000}
+  #report .r-head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid var(--accent);padding-bottom:12px;margin-bottom:18px}
+  #report h2{font-size:22px;color:var(--accent)}
+  #report h3{font-size:15px;margin:18px 0 8px;border-bottom:1px solid #ddd;padding-bottom:5px;color:#333}
+  #report table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:10px}
+  #report th,#report td{border:1px solid #ccc;padding:5px 7px;text-align:left}
+  #report th{background:#f3eef0}
+  #report .rk{display:inline-block;border:1px solid #ddd;border-radius:8px;padding:8px 12px;margin:0 8px 8px 0}
+  #report .rk b{display:block;font-size:17px;color:var(--accent)}
+  #report .rk span{font-size:10px;color:#666}
+  #report svg{max-width:230px}
+  .print-only{display:block}
+}
+.print-only{display:none}
+</style>
+</head>
+<body>
+<div class="scrim" id="scrim" onclick="UI.closeNav()"></div>
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="cap">🎓</div>
+      <div>
+        <b id="brandName">Formatura</b>
+        <small id="brandSub">Planejador</small>
+      </div>
+    </div>
+    <nav id="nav"></nav>
+    <div class="sidebar-foot">
+      <button class="btn ghost sm" style="flex:1" onclick="UI.go('config')">⚙️ Configurações</button>
+      <button class="icon-btn" id="themeBtn" title="Tema" onclick="UI.toggleTheme()">🌙</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" onclick="UI.openNav()" aria-label="Menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+      <div>
+        <h1 id="pageTitle">Painel</h1>
+        <div class="sub" id="pageSub"></div>
+      </div>
+      <div class="spacer"></div>
+      <div id="topActions" class="row"></div>
+    </header>
+    <main class="content" id="view"></main>
+  </div>
+</div>
+
+<!-- PRINT REPORT TARGET -->
+<div id="report"></div>
+<div class="toast" id="toast"></div>
+
+<script id="seed-data" type="application/json">{
+ "config": {
+  "nome": "Jackeline",
+  "curso": "Medicina",
+  "instituicao": "",
+  "dataFormatura": "2026-12-12",
+  "economiaMensal": 200,
+  "metaFinanceira": 7678.49,
+  "moeda": "R$",
+  "limiteConvidados": 50,
+  "custoPorConvidado": 150,
+  "frase": "Rumo ao jaleco branco 🩺"
+ },
+ "categorias": [
+  "Convites",
+  "Lembrancinhas",
+  "Embalagens",
+  "Festa",
+  "Homenagens",
+  "Decoração",
+  "Vestido",
+  "Sapatos",
+  "Acessórios",
+  "Cabelo",
+  "Maquiagem",
+  "Fotos",
+  "Documentação",
+  "Viagem",
+  "Outros"
+ ],
+ "gruposConvidados": [
+  "Família",
+  "Amigos",
+  "Faculdade",
+  "Trabalho",
+  "Professores",
+  "Outros"
+ ],
+ "items": [
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Sacola",
+   "prioridade": "alta",
+   "valorEstimado": 300.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "30 unid",
+   "link": "https://www.elo7.com.br/sacola-para-formatura-10-unid/dp/1B41EB2",
+   "observacoes": "",
+   "opcoes": [
+    {
+     "total": 300.0,
+     "unid": "30 unid",
+     "obs": "cada 10 bolsas= 100 reais",
+     "link": "https://www.elo7.com.br/sacola-para-formatura-10-unid/dp/1B41EB2",
+     "fav": true
+    }
+   ],
+   "id": "it1"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Eco Bag",
+   "prioridade": "alta",
+   "valorEstimado": 265.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "35 unid",
+   "link": "https://shopee.com.br/Kit-35-Sacolas-Ecobag-Algod%C3%A3o-Cru-30x30-Silk-1-Cor-20x28-Personalizada-Logotipos-Lembrancinha-i.475544653.23393108302",
+   "observacoes": "",
+   "opcoes": [
+    {
+     "total": 219.0,
+     "unid": "30 unid",
+     "obs": "minimo 20 unid",
+     "link": "https://www.elo7.com.br/sacola-ecobag-algodao-formatura-medicina-30x35-sua-arte-aqui/dp/1E10405",
+     "fav": false
+    },
+    {
+     "total": 213.0,
+     "unid": "30 unid",
+     "obs": "minimo 20 unid / tam 25x30",
+     "link": "https://www.elo7.com.br/lembrancinha-personalizada-sacola-ecobag-15-anos/dp/FB1E1C",
+     "fav": false
+    },
+    {
+     "total": 219.0,
+     "unid": "30 unid",
+     "obs": "minimo 20 unid",
+     "link": "https://www.elo7.com.br/sacola-ecobag-35x40-personalizada/dp/1B47E9F",
+     "fav": false
+    },
+    {
+     "total": 162.0,
+     "unid": "30 unid",
+     "obs": "minimo 30 unid / tam 30x30",
+     "link": "https://www.elo7.com.br/sacola-ecobag-30x30-personalizada-em-silk-1-cor/dp/82DD9D",
+     "fav": false
+    },
+    {
+     "total": 450.0,
+     "unid": "30 unid (minimo)",
+     "obs": "alça colorida e estampa 2 cores / tam 35x40",
+     "link": "INSTA: ecobagsdonaalice utm_source=ig&utm_medium=social&utm_content=link_in_bio&fbclid=PAdGRleAO6FHBleHRuA2FlbQIxMQBzcnRjBmFwcF9pZA8xMjQwMjQ1NzQyODc0MTQAAad7QoMgXWIe1GY0DRnccUITqJn91eXUvaw5wH-oQXNdH_JFjMhI-897K-j_rA_aem_OVDKdcOnEwKTfwKPP94SXQ",
+     "fav": false
+    },
+    {
+     "total": 162.0,
+     "unid": "30 unid (minimo)",
+     "obs": "tam 30x30 / se alça colorida: +2,50 por unid",
+     "link": "https://www.elo7.com.br/sacola-de-algodao-30x30-impressao-em-silk-1-cor/dp/1627C5A",
+     "fav": false
+    },
+    {
+     "total": 450.0,
+     "unid": "30 unid (minimo)",
+     "obs": "ecobag dona alice mara alça colorida",
+     "link": "11972910620",
+     "fav": false
+    },
+    {
+     "total": null,
+     "unid": "",
+     "obs": "ver na conceito - mto caro",
+     "link": "",
+     "fav": false
+    },
+    {
+     "total": 265.0,
+     "unid": "35 unid",
+     "obs": "parece ser mt boa - sem aquela marca ao redor",
+     "link": "https://shopee.com.br/Kit-35-Sacolas-Ecobag-Algod%C3%A3o-Cru-30x30-Silk-1-Cor-20x28-Personalizada-Logotipos-Lembrancinha-i.475544653.23393108302",
+     "fav": true
+    },
+    {
+     "total": 186.0,
+     "unid": "30 unid",
+     "obs": "ecobag mara alça colorida!!!!!!!!",
+     "link": "https://www.elo7.com.br/sacola-personalizada-lembrancinha-casamento-madrinha/dp/EAA3A1",
+     "fav": false
+    }
+   ],
+   "id": "it2"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Bolsa Personalizada",
+   "prioridade": "media",
+   "valorEstimado": 447.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "30 unid",
+   "link": "https://www.elo7.com.br/bolsa-personalizada-nylon-26x35x8/dp/19A08B5",
+   "observacoes": "",
+   "opcoes": [
+    {
+     "total": 450.0,
+     "unid": "30 unid",
+     "obs": "AMEI com ziper e de lona",
+     "link": "https://www.elo7.com.br/bolsa-personalizada-lembrancinha-de-casamento-para-madrinha/dp/10EB702",
+     "fav": false
+    },
+    {
+     "total": 510.0,
+     "unid": "30 unid",
+     "obs": "linda transparente em cima e logo em baixo",
+     "link": "https://www.elo7.com.br/bolsa-praia-personalizada/dp/1C7F871",
+     "fav": false
+    },
+    {
+     "total": 537.0,
+     "unid": "30 unid",
+     "obs": "linda com ziper lona - no meio parece q tem um quadrado preto",
+     "link": "https://www.elo7.com.br/bolsa-sacola-personalizada/dp/1295F08",
+     "fav": false
+    },
+    {
+     "total": 447.0,
+     "unid": "30 unid",
+     "obs": "LIDA AMEI ziper lona - 26x35x8 - preto em cima estampa em baixo",
+     "link": "https://www.elo7.com.br/bolsa-personalizada-nylon-26x35x8/dp/19A08B5",
+     "fav": true
+    },
+    {
+     "total": 480.0,
+     "unid": "30 unid",
+     "obs": "LINDA TB transparente em cima estampa em baixo BORDA BRANCA",
+     "link": "https://www.elo7.com.br/bolsa-praia-personalizada/dp/19AF173",
+     "fav": false
+    },
+    {
+     "total": 569.6999999999999,
+     "unid": "30 unid",
+     "obs": "LINDA com ziper - transparente cima estampa baixo - borda branca",
+     "link": "https://www.elo7.com.br/bolsa-praia-personalizada/dp/1058148",
+     "fav": false
+    },
+    {
+     "total": 450.0,
+     "unid": "30 unid",
+     "obs": "LINDA sem ziper - toda branca c estampa no meio (quadrado)",
+     "link": "https://www.elo7.com.br/bolsa-personalizada-circo/dp/1CFCBFC",
+     "fav": false
+    },
+    {
+     "total": 450.0,
+     "unid": "30 unid",
+     "obs": "LINDA COM ZIPER PFTA BICOLOR - BRANCO CIMA ESTAMPA EM BAIXO ALÇA BRANCA",
+     "link": "https://www.elo7.com.br/bolsa-para-lembrancinha-de-casamento/dp/1321B67",
+     "fav": false
+    }
+   ],
+   "id": "it3"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Chinelo",
+   "prioridade": "alta",
+   "valorEstimado": 200.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "20 unid (mínimo)",
+   "link": "https://www.elo7.com.br/chinelo-formatura-medicina-glitter-medicina/dp/1E36E7E",
+   "observacoes": "",
+   "opcoes": [
+    {
+     "total": 300.0,
+     "unid": "30 unid (mínimo)",
+     "obs": "x",
+     "link": "https://www.elo7.com.br/chinelo-formatura-medicina/dp/1A914BA",
+     "fav": false
+    },
+    {
+     "total": 200.0,
+     "unid": "20 unid (mínimo)",
+     "obs": "x",
+     "link": "https://www.elo7.com.br/chinelo-formatura-medicina-glitter-medicina/dp/1E36E7E",
+     "fav": true
+    },
+    {
+     "total": null,
+     "unid": "",
+     "obs": "",
+     "link": "https://www.elo7.com.br/amochinelo1",
+     "fav": false
+    }
+   ],
+   "id": "it4"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Taça Gin Personalizada",
+   "prioridade": "alta",
+   "valorEstimado": 174.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "30 unid",
+   "link": "https://www.elo7.com.br/kit-30-taca-gin-borda-metalizada-personalizada-promocao/dp/1F7B9F0",
+   "observacoes": "",
+   "opcoes": [
+    {
+     "total": 205.0,
+     "unid": "50 unid (minimo)",
+     "obs": "PROMOÇÃO! Gostei!",
+     "link": "https://www.elo7.com.br/50-tacas-de-gin-580ml-personalizadas/dp/114B976",
+     "fav": false
+    },
+    {
+     "total": 189.0,
+     "unid": "30 unid",
+     "obs": "gostei!!!!!",
+     "link": "Kit 30 Taças de Gin 580ml Degradê Acrílico Personalizadas | Elo7",
+     "fav": false
+    },
+    {
+     "total": 174.0,
+     "unid": "30 unid",
+     "obs": "gostei- estampa frente e verso / uma cor só bonitas / borda dourada metal",
+     "link": "https://www.elo7.com.br/kit-30-taca-gin-borda-metalizada-personalizada-promocao/dp/1F7B9F0",
+     "fav": true
+    },
+    {
+     "total": 204.0,
+     "unid": "30 unid",
+     "obs": "GOSTEI- estampa frente e verso / degrade dourado e borda dourada metal",
+     "link": "https://www.elo7.com.br/kit-30-taca-gin-degrade-e-borda-metalizada-personalizada/dp/1F7CC96",
+     "fav": false
+    },
+    {
+     "total": 174.0,
+     "unid": "30 unid",
+     "obs": "gostei - apenas degrade dourado",
+     "link": "https://www.elo7.com.br/kit-30-taca-gin-degrade-personalizada-promocao/dp/1F77FA2",
+     "fav": false
+    },
+    {
+     "total": null,
+     "unid": "x",
+     "obs": "COPO CHOP LINDO",
+     "link": "https://www.elo7.com.br/teccopos/colecao/canecas-chopp-para-formatura",
+     "fav": false
+    },
+    {
+     "total": null,
+     "unid": "x",
+     "obs": "x",
+     "link": "https://www.elo7.com.br/taca-gin-metalizada-premium-bicolor-arte-branca/dp/1C2A013",
+     "fav": false
+    },
+    {
+     "total": 297.0,
+     "unid": "30 unid",
+     "obs": "taça verde metalizada LINDA",
+     "link": "https://www.elo7.com.br/taca-gin-metalizada/dp/1E1D793",
+     "fav": false
+    }
+   ],
+   "id": "it5"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Necessaire",
+   "prioridade": "alta",
+   "valorEstimado": 240.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "30 unid",
+   "link": "https://www.elo7.com.br/necessaire-box-lembrancinha-personalizadas-formatura/dp/1E62848",
+   "observacoes": "",
+   "opcoes": [
+    {
+     "total": 297.0,
+     "unid": "30 unid",
+     "obs": "SLIM (mínimo 20 unid)",
+     "link": "https://www.elo7.com.br/necessaire-10x15-slim-formatura/dp/20E8A26",
+     "fav": false
+    },
+    {
+     "total": 240.0,
+     "unid": "30 unid",
+     "obs": "BOX (mínimo 10 unid) - GOSTEI PQ É IPERMEAVEL",
+     "link": "https://www.elo7.com.br/necessaire-box-lembrancinha-personalizadas-formatura/dp/1E62848",
+     "fav": true
+    },
+    {
+     "total": 360.0,
+     "unid": "30 unid",
+     "obs": "FAV!!!",
+     "link": "https://www.conceitobrindes.com.br/",
+     "fav": false
+    },
+    {
+     "total": 300.0,
+     "unid": "30 unid",
+     "obs": "TRAPEZIO COM CHAVEIRO",
+     "link": "https://www.elo7.com.br/necessaire-trapezio-personalizada/dp/1E01978",
+     "fav": false
+    },
+    {
+     "total": 255.0,
+     "unid": "30 unid",
+     "obs": "SLIM COM CHAVEIRO",
+     "link": "https://www.elo7.com.br/necessaire-slim-personalizada/dp/1E0194A",
+     "fav": false
+    },
+    {
+     "total": 240.0,
+     "unid": "30 unid",
+     "obs": "BOX!",
+     "link": "https://www.elo7.com.br/necessaire-box-lembrancinha-formatura-medicina/dp/1FA9619",
+     "fav": false
+    },
+    {
+     "total": 240.0,
+     "unid": "30 unid",
+     "obs": "TRAPEZIO TAM G! alt 11, larg 23, profund 4cm",
+     "link": "https://www.elo7.com.br/necessaire-trapezio-g-lembrancinha-tema-borboleta-lilas/dp/1FBBE12",
+     "fav": false
+    },
+    {
+     "total": 207.0,
+     "unid": "30 unid",
+     "obs": "TRAPEZIO TAM M! alt 11, larg 20",
+     "link": "https://www.elo7.com.br/necessaire-trapezio-m-brinde-personalizado-odontologia/dp/1E5E8E1",
+     "fav": false
+    },
+    {
+     "total": 240.0,
+     "unid": "30 unid",
+     "obs": "BOX",
+     "link": "https://www.elo7.com.br/necessaire-box-lembrancinha-brindes-mimo-para-clientes/dp/1E5DB95",
+     "fav": false
+    },
+    {
+     "total": 297.0,
+     "unid": "30 unid",
+     "obs": "box impermeavel e personalizada",
+     "link": "https://www.mercadolivre.com.br/pagina/myupperside",
+     "fav": false
+    },
+    {
+     "total": 198.0,
+     "unid": "30 unid",
+     "obs": "A Q EU TINHA PEDIDO MAS NO MERCADO LIVRE",
+     "link": "",
+     "fav": false
+    }
+   ],
+   "id": "it6"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Chaveiro",
+   "prioridade": "alta",
+   "valorEstimado": 26.59,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "50 unid",
+   "link": "https://shopee.com.br/Kit-50-Chaveiro-Acr%C3%ADlico-Personalizado-Chaveiro-Brinde-Lembrancinha-i.1291449078.22898834455",
+   "observacoes": "",
+   "opcoes": [
+    {
+     "total": 90.0,
+     "unid": "30 unid",
+     "obs": "minimo 30 unid / GOSTEI PRA COMPRAR C BOLSA DE ATE 8 REAIS.",
+     "link": "https://www.elo7.com.br/chaveiro-artesanal-personalizado-para-formatura/dp/1172BC6",
+     "fav": false
+    },
+    {
+     "total": 69.0,
+     "unid": "30 unid",
+     "obs": "SOMENTE O TASSEL (o rabinho de seda)",
+     "link": "https://www.elo7.com.br/franja-com-tulipa-rose-de-seda-tassel-9-5cm/dp/17F1879",
+     "fav": false
+    },
+    {
+     "total": 141.0,
+     "unid": "30 unid",
+     "obs": "somente brinde",
+     "link": "https://www.elo7.com.br/10-chaveiros-personalizados-promocao/dp/19F3052",
+     "fav": false
+    },
+    {
+     "total": 75.0,
+     "unid": "30 unid",
+     "obs": "brinde",
+     "link": "https://www.elo7.com.br/chaveiros-em-mdf-natural-formatura-medicina-medicos/dp/201CA50",
+     "fav": false
+    },
+    {
+     "total": 26.59,
+     "unid": "50 unid",
+     "obs": "AMEI",
+     "link": "https://shopee.com.br/Kit-50-Chaveiro-Acr%C3%ADlico-Personalizado-Chaveiro-Brinde-Lembrancinha-i.1291449078.22898834455",
+     "fav": true
+    },
+    {
+     "total": 60.0,
+     "unid": "10 unid",
+     "obs": "FRANJINHA MARSALA",
+     "link": "https://www.elo7.com.br/franja-de-seda-tassel-n-43-marsala-7cm-10-unidades/dp/182B820",
+     "fav": false
+    },
+    {
+     "total": 90.0,
+     "unid": "50 unid",
+     "obs": "LINDO / acrilico dourado",
+     "link": "https://shopee.com.br/KIT-50-chaveiros-em-acrilico-espelhado-na-cor-personalizado-i.1076473440.22794269593",
+     "fav": false
+    }
+   ],
+   "id": "it7"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Caneta",
+   "prioridade": "media",
+   "valorEstimado": 235.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "100 unid (minimo)",
+   "link": "https://www.elo7.com.br/100-canetas-personalizadas-mod-ca390/dp/149203D",
+   "observacoes": "",
+   "opcoes": [
+    {
+     "total": 235.0,
+     "unid": "100 unid (minimo)",
+     "obs": "GOSTEI",
+     "link": "https://www.elo7.com.br/100-canetas-personalizadas-mod-ca390/dp/149203D",
+     "fav": true
+    }
+   ],
+   "id": "it8"
+  },
+  {
+   "categoria": "Embalagens",
+   "descricao": "Adesivos",
+   "prioridade": "alta",
+   "valorEstimado": 160.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "150 unid",
+   "link": "https://www.elo7.com.br/adesivo-para-formatura-30-unid-65x65cm-personalizado/dp/1D0D3B8",
+   "observacoes": "",
+   "opcoes": [
+    {
+     "total": 160.0,
+     "unid": "150 unid",
+     "obs": "",
+     "link": "https://www.elo7.com.br/adesivo-para-formatura-30-unid-65x65cm-personalizado/dp/1D0D3B8",
+     "fav": true
+    }
+   ],
+   "id": "it9"
+  },
+  {
+   "categoria": "Homenagens",
+   "descricao": "Cartao Agradecimento",
+   "prioridade": "alta",
+   "valorEstimado": 20.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "48 unidades",
+   "link": "WPP!",
+   "observacoes": "",
+   "opcoes": [
+    {
+     "total": 60.0,
+     "unid": "30 unid",
+     "obs": "Compra mínima: 10 unidades",
+     "link": "https://www.elo7.com.br/cartao-agradecimento-formatura-lembranca/dp/1DA08C4",
+     "fav": false
+    },
+    {
+     "total": 20.0,
+     "unid": "48 unidades",
+     "obs": "",
+     "link": "WPP!",
+     "fav": true
+    }
+   ],
+   "id": "it10"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Caixinha Kit Ressaca",
+   "prioridade": "media",
+   "valorEstimado": 90.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "30 unid",
+   "link": "https://www.elo7.com.br/kit-ressaca-caixa-de-remedio-personalizada-formatura/dp/1C61D98",
+   "observacoes": "",
+   "opcoes": [
+    {
+     "total": 90.0,
+     "unid": "30 unid",
+     "obs": "1 pra cada sacola (30 sacolas)",
+     "link": "https://www.elo7.com.br/kit-ressaca-caixa-de-remedio-personalizada-formatura/dp/1C61D98",
+     "fav": true
+    }
+   ],
+   "id": "it11"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Balas Pro Kit Ressaca",
+   "prioridade": "media",
+   "valorEstimado": 70.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "100 unid",
+   "link": "https://www.elo7.com.br/balas-personalizadas-formatura-aniversario-festa-100-unid/dp/1C66A9F",
+   "observacoes": "",
+   "opcoes": [
+    {
+     "total": 70.0,
+     "unid": "100 unid",
+     "obs": "100 unidades: 70 reais / vem com meu brasao",
+     "link": "https://www.elo7.com.br/balas-personalizadas-formatura-aniversario-festa-100-unid/dp/1C66A9F",
+     "fav": true
+    }
+   ],
+   "id": "it12"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Taça Térmica",
+   "prioridade": "media",
+   "valorEstimado": 726.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "30 unidades",
+   "link": "https://shopee.com.br/Kit-10-15-20-30-ou-50-unid.-Ta%C3%A7a-T%C3%A9rmica-2-em-1-%E2%80%93-Inox-com-Parede-Dupla-a-V%C3%A1cuo-Com-Grava%C3%A7%C3%A3o-a-Laser-i.335240457.58202365049",
+   "observacoes": "",
+   "opcoes": [
+    {
+     "total": 597.0,
+     "unid": "30 unidades",
+     "obs": "não e personalizada",
+     "link": "https://shopee.com.br/product/1208678263/58251896913",
+     "fav": false
+    },
+    {
+     "total": 129.0,
+     "unid": "não tem escrito qts unidades",
+     "obs": "perguntei a loja qts undiades eram p sair esse preço (elo7)",
+     "link": "https://www.elo7.com.br/taca-termica-350ml-personalizado/dp/205E97F",
+     "fav": false
+    },
+    {
+     "total": 521.9,
+     "unid": "20 unidades",
+     "obs": "3x 174 / 4x 131 / 5x 104 - ATÉ 8X SEM JUROS",
+     "link": "https://shopee.com.br/KIT-20-Ta%C3%A7a-Copo-T%C3%A9rmico-De-A%C3%A7o-Inoxid%C3%A1vel-2-Em-1-Para-Bebidas-E-Drinks-400ML-V%C3%81RIAS-CORES--i.1299327674.20999902912",
+     "fav": false
+    },
+    {
+     "total": 600.0,
+     "unid": "30 unidades",
+     "obs": "não e personalizada",
+     "link": "https://shopee.com.br/Ta%C3%A7a-Copo-T%C3%A9rmico-De-A%C3%A7o-Inoxid%C3%A1vel-2-Em-1-Para-Bebidas-E-Drinks-i.1072624004.23898732161",
+     "fav": false
+    },
+    {
+     "total": 554.6999999999999,
+     "unid": "30 unidades",
+     "obs": "não e personalizada",
+     "link": "https://shopee.com.br/Ta%C3%A7a-Copo-T%C3%A9rmico-De-A%C3%A7o-Inoxid%C3%A1vel-2-Em-1-Para-Gin-Vinho-Cerveja-Drink-Bebidas-14oz-Envia-R%C3%A1pida-i.1288270424.58200476558",
+     "fav": false
+    },
+    {
+     "total": 750.0,
+     "unid": "30 unidades",
+     "obs": "já é personalizada",
+     "link": "https://shopee.com.br/kit-Ta%C3%A7a-T%C3%A9rmica-Inox-414ml-personalizada-a-laser-%C3%B3timo-para-brindes-de-empresa-e-casamentos-eventos.-i.744561977.58251943866",
+     "fav": false
+    },
+    {
+     "total": 899.0,
+     "unid": "30 unidades",
+     "obs": "já personalizada (20 unid=600)",
+     "link": "",
+     "fav": false
+    },
+    {
+     "total": 726.0,
+     "unid": "30 unidades",
+     "obs": "já personalizada MELHOR PREÇO",
+     "link": "https://shopee.com.br/Kit-10-15-20-30-ou-50-unid.-Ta%C3%A7a-T%C3%A9rmica-2-em-1-%E2%80%93-Inox-com-Parede-Dupla-a-V%C3%A1cuo-Com-Grava%C3%A7%C3%A3o-a-Laser-i.335240457.58202365049",
+     "fav": true
+    },
+    {
+     "total": 450.0,
+     "unid": "30 unidades",
+     "obs": "TIKTOK TEM DIRETO PROMO",
+     "link": "TIKTOK",
+     "fav": false
+    }
+   ],
+   "id": "it13"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Copo Térmico",
+   "prioridade": "media",
+   "valorEstimado": 227.1,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "30 unid",
+   "link": "https://pt.aliexpress.com/item/1005008734522478.html",
+   "observacoes": "",
+   "opcoes": [
+    {
+     "total": 870.0,
+     "unid": "30 unid",
+     "obs": "copo personalizado com tampa",
+     "link": "https://shopee.com.br/Kit-3-Copos-T%C3%A9rmico-Cuia-Personalizado-Nome-Logo-time-360ml-A%C3%A7o-Inox-tampa-anti-vazamento-i.863590407.23998889403",
+     "fav": false
+    },
+    {
+     "total": 870.9000000000001,
+     "unid": "30 unid",
+     "obs": "x",
+     "link": "https://shopee.com.br/KIT-10-copo-cuia-360ml-t%C3%A9rmico-personalizado-a-laser-i.776916631.58250520473",
+     "fav": false
+    },
+    {
+     "total": 578.0,
+     "unid": "20 unid",
+     "obs": "LOJA BOA! TEM VARIAS PROMOÇÕES. OLHAR.",
+     "link": "https://shopee.com.br/Kit-20-copo-cuia-360ml-com-nome-e-logo-nome-Copos-Personalizado-brinde-logo-empresa-i.863590407.22994392055",
+     "fav": false
+    },
+    {
+     "total": 552.0,
+     "unid": "20 unid",
+     "obs": "LOJA BOA! TEM VARIAS PROMOÇÕES. OLHAR.",
+     "link": "https://shopee.com.br/KIT-20-copo-cuia-360ml-com-tampa-i.776916631.19999892968",
+     "fav": false
+    },
+    {
+     "total": 348.0,
+     "unid": "30 unid",
+     "obs": "with name / aliexpress",
+     "link": "https://pt.aliexpress.com/item/1005002851313671.html",
+     "fav": false
+    },
+    {
+     "total": 227.10000000000002,
+     "unid": "30 unid",
+     "obs": "TEM MARSALA LINDA / ali",
+     "link": "https://pt.aliexpress.com/item/1005008734522478.html",
+     "fav": true
+    },
+    {
+     "total": 209.70000000000002,
+     "unid": "30 unid",
+     "obs": "COPO É MAIOR q o normal / ali",
+     "link": "https://pt.aliexpress.com/item/1005009277475900.html",
+     "fav": false
+    },
+    {
+     "total": 837.0,
+     "unid": "30 unid",
+     "obs": "",
+     "link": "55 11 974837393 WPP SOLUART BRINDES",
+     "fav": false
+    },
+    {
+     "total": 552.0,
+     "unid": "20 unid",
+     "obs": "personalizado",
+     "link": "https://shopee.com.br/KIT-20-copo-cuia-360ml-com-tampa-i.776916631.19999892968",
+     "fav": false
+    },
+    {
+     "total": 859.0,
+     "unid": "30 unid",
+     "obs": "personalizado",
+     "link": "https://shopee.com.br/KIT-30-copo-cuia-360ml-t%C3%A9rmico-personalizado-a-laser-i.776916631.58251030538",
+     "fav": false
+    },
+    {
+     "total": 690.0,
+     "unid": "30 unid",
+     "obs": "personalizado - formato estranho",
+     "link": "https://shopee.com.br/Kit-Copo-T%C3%A9rmico-260ml-Personalizado-a-Laser-%E2%80%93-Nome-Logo-ou-Arte-Exclusiva-Kit-10-20-30-ou-50-unid-i.401511089.23798923548",
+     "fav": false
+    },
+    {
+     "total": 819.0,
+     "unid": "30 unid",
+     "obs": "personalizado - cuia melhor preço",
+     "link": "https://shopee.com.br/Kit-50-Copos-T%C3%A9rmicos-Inox-Personalizados-Logo-de-Empresa-ou-Time-Brinde-Ideal-i.326060565.23098299415",
+     "fav": false
+    },
+    {
+     "total": 784.0,
+     "unid": "30 unid",
+     "obs": "personalizado CUIA MELHOR PREÇO FRETE GRATIS",
+     "link": "https://produto.mercadolivre.com.br/MLB-4192445133-kit-15-copo-termico-cuia-360ml-personalizado-nome-logo-time-_JM",
+     "fav": false
+    },
+    {
+     "total": 850.0,
+     "unid": "30 unid",
+     "obs": "personalizado",
+     "link": "https://shopee.com.br/Kit-30-Copo-T%C3%A9rmico-Cuia-360ml-Personalizado-Logo-Nome-Time-Empresa-Brinde-i.357313728.22997984579",
+     "fav": false
+    },
+    {
+     "total": 757.0,
+     "unid": "30 unid",
+     "obs": "personalizado - ROSA - perguntei se tem branco",
+     "link": "https://produto.mercadolivre.com.br/MLB-5580797966-kit-30-copos-termico-cuia-360ml-personalizado-c-nome-logo-_JM",
+     "fav": false
+    }
+   ],
+   "id": "it14"
+  },
+  {
+   "categoria": "Homenagens",
+   "descricao": "Homenagem Mãe",
+   "prioridade": "alta",
+   "valorEstimado": 22.9,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "30 unidades",
+   "link": "https://shopee.com.br/Tag-Personalizada-9x5cm-Fazemos-em-qualquer-tema-i.433369287.23098732087",
+   "observacoes": "",
+   "opcoes": [
+    {
+     "total": 22.9,
+     "unid": "30 unidades",
+     "obs": "sem laminação disponivel. Esperar p ver o preço de laminação brilho e fotografica",
+     "link": "https://shopee.com.br/Tag-Personalizada-9x5cm-Fazemos-em-qualquer-tema-i.433369287.23098732087",
+     "fav": true
+    },
+    {
+     "total": 30.0,
+     "unid": "48 unidades",
+     "obs": "perguntei se pode colocar foto - PODE",
+     "link": "https://shopee.com.br/Cart%C3%B5es-de-Agradecimento-Personalizados-Envie-sua-arte-10x7-i.372077820.20626639410",
+     "fav": false
+    },
+    {
+     "total": 114.0,
+     "unid": "30 unidades",
+     "obs": "x",
+     "link": "https://www.elo7.com.br/cartao-de-agradecimento-para-casamento-personalizado/dp/1EB380B",
+     "fav": false
+    },
+    {
+     "total": 55.0,
+     "unid": "30 unidades",
+     "obs": "x",
+     "link": "https://shopee.com.br/Cart%C3%A3o-de-Agradecimento-Personalizado-(Formatura-Festas-Casamento-etc)-10x15c-i.944789125.22993426970",
+     "fav": false
+    }
+   ],
+   "id": "it15"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Gloss / Manteiga Cacau",
+   "prioridade": "media",
+   "valorEstimado": 480.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "50 unidades",
+   "link": "https://shopee.com.br/Kit-50-Gloss-Personalizado-com-a-sua-logo-Mimos-i.508319577.58251805411",
+   "observacoes": "",
+   "opcoes": [
+    {
+     "total": 130.0,
+     "unid": "240,00 (com 20 unid) e 360,00 (com 30)",
+     "obs": "é aqueles chiques",
+     "link": "https://shopee.com.br/Kit-20-Gloss-Personalizado-com-a-sua-logo-mimo-para-clientes-i.508319577.22099223890",
+     "fav": false
+    },
+    {
+     "total": 551.0,
+     "unid": "30 unidades",
+     "obs": "aliexpress",
+     "link": "https://pt.aliexpress.com/item/1005005780911338.html",
+     "fav": false
+    },
+    {
+     "total": 560.0,
+     "unid": "30 unidades",
+     "obs": "ali / FRETE GRATIS E LINDOOOO AMEI",
+     "link": "https://pt.aliexpress.com/item/1005007883065643.html",
+     "fav": false
+    },
+    {
+     "total": 210.0,
+     "unid": "30 unidades",
+     "obs": "ali / AMEI TBM É GLOSS",
+     "link": "https://pt.aliexpress.com/item/1005004433200818.html",
+     "fav": false
+    },
+    {
+     "total": 210.0,
+     "unid": "30 unidades",
+     "obs": "ali / AMEI TBM É GLOSS",
+     "link": "https://pt.aliexpress.com/item/1005004433200818.html",
+     "fav": false
+    },
+    {
+     "total": 438.0,
+     "unid": "30 unidades",
+     "obs": "",
+     "link": "https://pt.aliexpress.com/item/1005005012176160.html",
+     "fav": false
+    },
+    {
+     "total": 165.0,
+     "unid": "30 unidades",
+     "obs": "MANTEIGA DE CACAU COM CAIXA AMEI ELO7",
+     "link": "https://www.elo7.com.br/caixa-com-protetor-labial/dp/1FAF076",
+     "fav": false
+    },
+    {
+     "total": 237.0,
+     "unid": "30 unidades",
+     "obs": "bonito LOJA BOA E BARATA não e luxo",
+     "link": "https://www.elo7.com.br/lip-gloss-labial-personalizado-natal/dp/20CC2DB",
+     "fav": false
+    },
+    {
+     "total": 117.0,
+     "unid": "30 unidades",
+     "obs": "MANTEIGA DE CACAU",
+     "link": "https://www.elo7.com.br/manteiga-de-cacau-protetor-labial-brinde-hidratante/dp/1B93085",
+     "fav": false
+    },
+    {
+     "total": 595.0,
+     "unid": "26 unidades",
+     "obs": "gloss LINDO e chique",
+     "link": "https://www.mercadolivre.com.br/26-unid-gloss-personalizado-com-marca-ou-nome-para-brindes/up/MLBU3445350564",
+     "fav": false
+    },
+    {
+     "total": 360.0,
+     "unid": "30 unidades",
+     "obs": "LUXOO ESSSSEEE",
+     "link": "https://shopee.com.br/product/508319577/22099223890",
+     "fav": false
+    },
+    {
+     "total": 165.0,
+     "unid": "30 unidades",
+     "obs": "lip balm caixa redonda, impressao no papel",
+     "link": "https://shopee.com.br/Hidratante-labial-personalizado-com-a-sua-logo-i.1383525714.22398013891",
+     "fav": false
+    },
+    {
+     "total": 420.0,
+     "unid": "30 unidades",
+     "obs": "MINI GLOSS LUXO personalizado",
+     "link": "https://shopee.com.br/Lip-oil-mini-luxo-personalizado-com-a-sua-logo-i.1383525714.58250653089",
+     "fav": false
+    },
+    {
+     "total": 480.0,
+     "unid": "50 unidades",
+     "obs": "GLOSS LUXO VALE A PENA",
+     "link": "https://shopee.com.br/Kit-50-Gloss-Personalizado-com-a-sua-logo-Mimos-i.508319577.58251805411",
+     "fav": true
+    },
+    {
+     "total": 181.0,
+     "unid": "36 unidades",
+     "obs": "lip balm redondo, sem personalização, com escrito (tem q imprimir adesivo)",
+     "link": "https://www.mercadolivre.com.br/box-36-lip-balm-hidratante-labial-vivai-cores-diferentes/up/MLBU3205955002",
+     "fav": false
+    },
+    {
+     "total": 225.0,
+     "unid": "30 unidades",
+     "obs": "esfoliante labial redondo sem pázinha personalizado com adesivo",
+     "link": "https://www.elo7.com.br/esfoliante-labial-natural-lembrancinha-4-0g/dp/1C73108",
+     "fav": false
+    },
+    {
+     "total": 144.5,
+     "unid": "30 unidades (5 pacotes com 6)",
+     "obs": "ai só tem q imprimir o adesivo vinil",
+     "link": "https://shopee.com.br/Kit-De-Gloss-Labial-Hidratante-De-Longa-Dura%C3%A7%C3%A3o-B%C3%A1lsamo-Linha-Repai-r-Copo-Antiaderente-Primer-DY-i.1356795237.22493701582",
+     "fav": false
+    }
+   ],
+   "id": "it16"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Kit Espelho",
+   "prioridade": "baixa",
+   "valorEstimado": 70.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "10 unid",
+   "link": "https://shopee.com.br/10-Mini-Espelho-de-Bolsa-em-Acr%C3%ADlico-Personalizado-ORGANICO-i.401576028.58200625588",
+   "observacoes": "",
+   "opcoes": [
+    {
+     "total": 105.0,
+     "unid": "50 unid",
+     "obs": "LINDOO DMS",
+     "link": "https://shopee.com.br/Kit-Espelhos-de-Bolsa-Acr%C3%ADlico-Personalizado-com-Base-6cm-%E2%80%93-Brinde-para-Sal%C3%A3o-e-Eventos-Kits-com-15-30-50-100-i.1387437801.58202552745",
+     "fav": false
+    },
+    {
+     "total": 70.0,
+     "unid": "10 unid",
+     "obs": "PERFEITO mas mais caro",
+     "link": "https://shopee.com.br/10-Mini-Espelho-de-Bolsa-em-Acr%C3%ADlico-Personalizado-ORGANICO-i.401576028.58200625588",
+     "fav": true
+    }
+   ],
+   "id": "it17"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Kit Escova Separada",
+   "prioridade": "baixa",
+   "valorEstimado": 160.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "30 unidades",
+   "link": "https://shopee.com.br/Kit-30-pe%C3%A7as-escovas-M%C3%A1gica-Personalizada-(-Grava%C3%A7%C3%A3o-a-Laser-)Lembran%C3%A7a-***-LER-DESCRI%C3%87%C3%83O***-i.1541169912.21499846554",
+   "observacoes": "",
+   "opcoes": [
+    {
+     "total": 160.0,
+     "unid": "30 unidades",
+     "obs": "MAIS BARATA - GOSTEI DELA COM ESPELHO",
+     "link": "https://shopee.com.br/Kit-30-pe%C3%A7as-escovas-M%C3%A1gica-Personalizada-(-Grava%C3%A7%C3%A3o-a-Laser-)Lembran%C3%A7a-***-LER-DESCRI%C3%87%C3%83O***-i.1541169912.21499846554",
+     "fav": true
+    },
+    {
+     "total": 160.0,
+     "unid": "30 unid",
+     "obs": "VALE MT A PENA",
+     "link": "https://shopee.com.br/Kit-30-pe%C3%A7as-escovas-M%C3%A1gica-Personalizada-(-Grava%C3%A7%C3%A3o-a-Laser-)Lembran%C3%A7a-***-LER-DESCRI%C3%87%C3%83O***-i.1541169912.21499846554",
+     "fav": false
+    },
+    {
+     "total": 144.2,
+     "unid": "50 unid",
+     "obs": "adesivo na grafica",
+     "link": "https://shopee.com.br/user/purchase/order/229010041129448",
+     "fav": false
+    }
+   ],
+   "id": "it18"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Caixas / Sacolas",
+   "prioridade": "alta",
+   "valorEstimado": 66.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "30 unid",
+   "link": "https://www.elo7.com.br/caixas-com-logo-arte-personalizada/dp/1CDD9C6",
+   "observacoes": "",
+   "opcoes": [
+    {
+     "total": 300.0,
+     "unid": "30 unid",
+     "obs": "Sacola pro copo",
+     "link": "https://www.360imprimir.com.br/caixas-e-embalagens",
+     "fav": false
+    },
+    {
+     "total": 66.0,
+     "unid": "30 unid",
+     "obs": "caixa pro copo (olhar o tamanho p ver se cabe) - loja mt boa",
+     "link": "https://www.elo7.com.br/caixas-com-logo-arte-personalizada/dp/1CDD9C6",
+     "fav": true
+    },
+    {
+     "total": 51.0,
+     "unid": "30 unid",
+     "obs": "caixa prata sublimatica sem logo",
+     "link": "https://www.cartucho-e-impressora.com.br/caixinha-prata-sublimatica-para-embalagem-de-canecas-de-ceramica-porcelana-caixinha-para-presente-modelo-fechada-p1725",
+     "fav": false
+    },
+    {
+     "total": null,
+     "unid": "x",
+     "obs": "sacolas personalizadas de todos os tamanhos - colocar oq quero",
+     "link": "https://www.elo7.com.br/arteseglamourpersonalizados",
+     "fav": false
+    },
+    {
+     "total": 900.0,
+     "unid": "30 unid",
+     "obs": "caixa rigida p escrveer na tampa de dentro e botar o copo cuiaTOPPPP",
+     "link": "https://shopee.com.br/Caixa15x15x5cm-Convite-Padrinho-Casamento-Caixa-Personalizada-com-Iniciais-i.1522475356.23998708983",
+     "fav": false
+    },
+    {
+     "total": 525.0,
+     "unid": "30 unid",
+     "obs": "caixa cartonada com escrita dentro 10x10  - OLHAR MAIS MODELOS DA LOJA LINDOS",
+     "link": "https://www.elo7.com.br/caixa-10x10-para-curso/dp/1E204CE",
+     "fav": false
+    },
+    {
+     "total": 897.0,
+     "unid": "30 unid",
+     "obs": "caixa para caneca direto",
+     "link": "https://shopee.com.br/product/239661440/19898296778",
+     "fav": false
+    },
+    {
+     "total": 180.0,
+     "unid": "30 unid",
+     "obs": "30 caixinhas pretas p caneta sem estampa",
+     "link": "https://www.elo7.com.br/30-caixinha-de-estojo-para-caneta-de-papelao-para-presentes/dp/1BA4C96",
+     "fav": false
+    },
+    {
+     "total": 84.0,
+     "unid": "30 unid",
+     "obs": "caixinha branca simples mas tem etiqueta c logo vale a pena ate",
+     "link": "https://www.elo7.com.br/caixinha-para-caneta/dp/F849C9",
+     "fav": false
+    },
+    {
+     "total": 290.0,
+     "unid": "100 unid (minimo)",
+     "obs": "bolsinha seda linda dms",
+     "link": "https://www.elo7.com.br/embalagem-saco-personalizado-10x7/dp/15B0B39",
+     "fav": false
+    },
+    {
+     "total": 450.0,
+     "unid": "30 unid",
+     "obs": "2 CANUDOS + CAIXINHA C ESTAMPA (CANUDOS C ESTAMPA TB) AMEI",
+     "link": "https://www.elo7.com.br/kit-canudo-inox-c-3-pcs-embalagem-personalizados/dp/1042451",
+     "fav": false
+    },
+    {
+     "total": 110.00000000000001,
+     "unid": "50 unid (minim)",
+     "obs": "SAQUINHO HASHI mas e p colocar meus canudos personalizados",
+     "link": "https://www.elo7.com.br/saquinho-hashi-personalizado-porta-hashi/dp/198BBB6",
+     "fav": false
+    }
+   ],
+   "id": "it19"
+  },
+  {
+   "categoria": "Embalagens",
+   "descricao": "Fita Cetim",
+   "prioridade": "media",
+   "valorEstimado": 50.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "38mm",
+   "link": "",
+   "observacoes": "",
+   "opcoes": [
+    {
+     "total": 50.0,
+     "unid": "38mm",
+     "obs": "",
+     "link": "",
+     "fav": true
+    }
+   ],
+   "id": "it20"
+  },
+  {
+   "categoria": "Festa",
+   "descricao": "Marmita C Logo Adesivo",
+   "prioridade": "media",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "",
+   "opcoes": [],
+   "id": "it21"
+  },
+  {
+   "categoria": "Embalagens",
+   "descricao": "Tag Com Minha Logo",
+   "prioridade": "baixa",
+   "valorEstimado": 52.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "100",
+   "link": "https://www.elo7.com.br/tag-em-papel-kraft-personalizada-com-a-sua-logo/dp/1C7DA64",
+   "observacoes": "Item opcional (\"talvez\").",
+   "opcoes": [
+    {
+     "total": 52.0,
+     "unid": "100",
+     "obs": "mínimo 100 unidades (52 reais)",
+     "link": "https://www.elo7.com.br/tag-em-papel-kraft-personalizada-com-a-sua-logo/dp/1C7DA64",
+     "fav": true
+    }
+   ],
+   "id": "it22"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Caderno + Chaveiro",
+   "prioridade": "baixa",
+   "valorEstimado": 300.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "30",
+   "link": "https://www.elo7.com.br/kit-formatura-medicina-personalizado-lembrancinha/dp/203E98A",
+   "observacoes": "Item opcional (\"talvez\").",
+   "opcoes": [
+    {
+     "total": 300.0,
+     "unid": "30",
+     "obs": "x",
+     "link": "https://www.elo7.com.br/kit-formatura-medicina-personalizado-lembrancinha/dp/203E98A",
+     "fav": true
+    }
+   ],
+   "id": "it23"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Chinelo + Necessaire P Chinelo",
+   "prioridade": "baixa",
+   "valorEstimado": 192.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "10",
+   "link": "https://www.elo7.com.br/kit-necessaire-e-chinelo-personalizado-para-casamento/dp/1B6A674",
+   "observacoes": "Item opcional (\"talvez\").",
+   "opcoes": [
+    {
+     "total": 192.0,
+     "unid": "10",
+     "obs": "mínimo 10 unid",
+     "link": "https://www.elo7.com.br/kit-necessaire-e-chinelo-personalizado-para-casamento/dp/1B6A674",
+     "fav": true
+    }
+   ],
+   "id": "it24"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Caderno De Assinaturas",
+   "prioridade": "baixa",
+   "valorEstimado": 70.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "1",
+   "link": "https://www.elo7.com.br/caderno-para-mensagens-assinatura/dp/1E01A97",
+   "observacoes": "Item opcional (\"talvez\").",
+   "opcoes": [
+    {
+     "total": 70.0,
+     "unid": "1",
+     "obs": "",
+     "link": "https://www.elo7.com.br/caderno-para-mensagens-assinatura/dp/1E01A97",
+     "fav": true
+    }
+   ],
+   "id": "it25"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Bloquinho Capa Dura",
+   "prioridade": "baixa",
+   "valorEstimado": 72.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "30 unidades",
+   "link": "https://www.elo7.com.br/bloquinho-personalizado-urso/dp/87281C",
+   "observacoes": "Item opcional (\"talvez\").",
+   "opcoes": [
+    {
+     "total": 72.0,
+     "unid": "30 unidades",
+     "obs": "O MELHOR PREÇO. LOJA BARATA",
+     "link": "https://www.elo7.com.br/bloquinho-personalizado-urso/dp/87281C",
+     "fav": true
+    }
+   ],
+   "id": "it26"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Tapa Olho De Dormir",
+   "prioridade": "baixa",
+   "valorEstimado": 150.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "30 unidades",
+   "link": "https://www.elo7.com.br/mascara-de-dormir-tapa-olho-personalizado/dp/1EE95F6",
+   "observacoes": "Item opcional (\"talvez\").",
+   "opcoes": [
+    {
+     "total": 150.0,
+     "unid": "30 unidades",
+     "obs": "x",
+     "link": "https://www.elo7.com.br/mascara-de-dormir-tapa-olho-personalizado/dp/1EE95F6",
+     "fav": true
+    }
+   ],
+   "id": "it27"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Caderno E Folha Personalizado Amei",
+   "prioridade": "baixa",
+   "valorEstimado": 160.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "32 unidades",
+   "link": "https://www.elo7.com.br/caderninhos-com-capa-e-folhas-personalizadas/dp/1FAF81C",
+   "observacoes": "Item opcional (\"talvez\").",
+   "opcoes": [
+    {
+     "total": 160.0,
+     "unid": "32 unidades",
+     "obs": "ESSSEEE",
+     "link": "https://www.elo7.com.br/caderninhos-com-capa-e-folhas-personalizadas/dp/1FAF81C",
+     "fav": true
+    }
+   ],
+   "id": "it28"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Sacos Para Chinelo",
+   "prioridade": "baixa",
+   "valorEstimado": 67.2,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "30 unidades",
+   "link": "https://shopee.com.br/5-10-15-Sacos-de-Organza-para-Chinelos-e-Lembran%C3%A7as-20x40cm-Brancos-i.490427212.13107516880",
+   "observacoes": "Item opcional (\"talvez\").",
+   "opcoes": [
+    {
+     "total": 67.2,
+     "unid": "30 unidades",
+     "obs": "",
+     "link": "https://shopee.com.br/5-10-15-Sacos-de-Organza-para-Chinelos-e-Lembran%C3%A7as-20x40cm-Brancos-i.490427212.13107516880",
+     "fav": true
+    }
+   ],
+   "id": "it29"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Aromatizantes P Carro",
+   "prioridade": "baixa",
+   "valorEstimado": 88.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "100 unid",
+   "link": "https://shopee.com.br/100-Und-Aromatizante-Personalizado-4x4cm-i.530625500.23898091178",
+   "observacoes": "Item opcional (\"talvez\").",
+   "opcoes": [
+    {
+     "total": 88.0,
+     "unid": "100 unid",
+     "obs": "",
+     "link": "https://shopee.com.br/100-Und-Aromatizante-Personalizado-4x4cm-i.530625500.23898091178",
+     "fav": true
+    }
+   ],
+   "id": "it30"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Aromatizante P Casa",
+   "prioridade": "baixa",
+   "valorEstimado": 50.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "50 unid",
+   "link": "https://shopee.com.br/50-Aromatizador-100mL-Lembrancinha-Personalizada-Bodas-Casamento-Noivado-i.754528592.22697152937",
+   "observacoes": "Item opcional (\"talvez\").",
+   "opcoes": [
+    {
+     "total": 50.0,
+     "unid": "50 unid",
+     "obs": "pegue e monte - separado a caixa, rotulo e pauzinho",
+     "link": "https://shopee.com.br/50-Aromatizador-100mL-Lembrancinha-Personalizada-Bodas-Casamento-Noivado-i.754528592.22697152937",
+     "fav": true
+    }
+   ],
+   "id": "it31"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Aromatizante P Casa",
+   "prioridade": "baixa",
+   "valorEstimado": 80.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "100 unid",
+   "link": "https://shopee.com.br/100-Mini-Aromatizadores-Brindes-Para-Casamento-Formatura-Bodas-e-lojas-Personalizados-i.754528592.16359144369",
+   "observacoes": "Item opcional (\"talvez\").",
+   "opcoes": [
+    {
+     "total": 80.0,
+     "unid": "100 unid",
+     "obs": "MESMA LOJA E ESQUEMA ACIMA",
+     "link": "https://shopee.com.br/100-Mini-Aromatizadores-Brindes-Para-Casamento-Formatura-Bodas-e-lojas-Personalizados-i.754528592.16359144369",
+     "fav": true
+    }
+   ],
+   "id": "it32"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Sabonete C Brasão",
+   "prioridade": "baixa",
+   "valorEstimado": 175.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "30 unidades",
+   "link": "https://shopee.com.br/Lembrancinha-Sabonete-Bras%C3%A3o-1-Letra-Personalizado-Saquinho-Organza-kit-10-15-20-25-30-35-40-45-50-i.270791843.21699607160",
+   "observacoes": "Item opcional (\"talvez\").",
+   "opcoes": [
+    {
+     "total": 175.0,
+     "unid": "30 unidades",
+     "obs": "bonito",
+     "link": "https://shopee.com.br/Lembrancinha-Sabonete-Bras%C3%A3o-1-Letra-Personalizado-Saquinho-Organza-kit-10-15-20-25-30-35-40-45-50-i.270791843.21699607160",
+     "fav": true
+    }
+   ],
+   "id": "it33"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Adesivo Vinil P Gloss",
+   "prioridade": "baixa",
+   "valorEstimado": 36.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "50 unidades",
+   "link": "https://www.mercadolivre.com.br/50-adesivos-etiquetas-vinil-personalizado-para-gloss-labial/up/MLBU3332768667",
+   "observacoes": "Item opcional (\"talvez\").",
+   "opcoes": [
+    {
+     "total": 36.0,
+     "unid": "50 unidades",
+     "obs": "etiqueta transparente com minha logo",
+     "link": "https://www.mercadolivre.com.br/50-adesivos-etiquetas-vinil-personalizado-para-gloss-labial/up/MLBU3332768667",
+     "fav": true
+    }
+   ],
+   "id": "it34"
+  },
+  {
+   "categoria": "Festa",
+   "descricao": "Sousplat",
+   "prioridade": "baixa",
+   "valorEstimado": 86.7,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "30 unidades",
+   "link": "https://www.elo7.com.br/mini-sousplat-personalizado/dp/EDFC13",
+   "observacoes": "Item opcional (\"talvez\").",
+   "opcoes": [
+    {
+     "total": 86.7,
+     "unid": "30 unidades",
+     "obs": "PROMO",
+     "link": "https://www.elo7.com.br/mini-sousplat-personalizado/dp/EDFC13",
+     "fav": true
+    }
+   ],
+   "id": "it35"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Mini Alcool Em Gel",
+   "prioridade": "baixa",
+   "valorEstimado": 90.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "30 unidades",
+   "link": "https://www.elo7.com.br/lembrancinha-alcool-em-gel-passarinho/dp/154EE8D",
+   "observacoes": "Item opcional (\"talvez\").",
+   "opcoes": [
+    {
+     "total": 90.0,
+     "unid": "30 unidades",
+     "obs": "vale a penaaa",
+     "link": "https://www.elo7.com.br/lembrancinha-alcool-em-gel-passarinho/dp/154EE8D",
+     "fav": true
+    }
+   ],
+   "id": "it36"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Mini Alcool Em Gel Com Caixinha",
+   "prioridade": "baixa",
+   "valorEstimado": 150.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "30 unidades",
+   "link": "https://www.elo7.com.br/lembrancinha-alcool-gel-com-caixinha-passarinho/dp/15988FF",
+   "observacoes": "Item opcional (\"talvez\").",
+   "opcoes": [
+    {
+     "total": 150.0,
+     "unid": "30 unidades",
+     "obs": "com a caixinha",
+     "link": "https://www.elo7.com.br/lembrancinha-alcool-gel-com-caixinha-passarinho/dp/15988FF",
+     "fav": true
+    }
+   ],
+   "id": "it37"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Vela Aromatico C Saquinho",
+   "prioridade": "baixa",
+   "valorEstimado": 140.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "35 unid (minimo)",
+   "link": "https://www.elo7.com.br/lembrancinha-personalizada-natal/dp/1F10E32",
+   "observacoes": "Item opcional (\"talvez\").",
+   "opcoes": [
+    {
+     "total": 140.0,
+     "unid": "35 unid (minimo)",
+     "obs": "",
+     "link": "https://www.elo7.com.br/lembrancinha-personalizada-natal/dp/1F10E32",
+     "fav": true
+    }
+   ],
+   "id": "it38"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Vela Aromatica Sem Saquinhp",
+   "prioridade": "baixa",
+   "valorEstimado": 7.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "https://www.elo7.com.br/mondyartes/colecao/formatura",
+   "observacoes": "Item opcional (\"talvez\").",
+   "opcoes": [
+    {
+     "total": 119.4,
+     "unid": "30 unidades",
+     "obs": "",
+     "link": "https://www.elo7.com.br/vela-aromatica-natal/dp/1D39D6D",
+     "fav": false
+    },
+    {
+     "total": 7.0,
+     "unid": "",
+     "obs": "LOJA TAÇAS COM CAIXA RIGIDA LINDO DMS",
+     "link": "https://www.elo7.com.br/mondyartes/colecao/formatura",
+     "fav": true
+    }
+   ],
+   "id": "it39"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "KIT ECOBAG 32x37cm + TAÇA GIN 450ml",
+   "prioridade": "baixa",
+   "valorEstimado": 360.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "30 unid",
+   "link": "WPP: 21 96983-0983",
+   "observacoes": "Item opcional (\"talvez\").",
+   "opcoes": [
+    {
+     "total": 360.0,
+     "unid": "30 unid",
+     "obs": "Grafica AM 24h (21 96983-0983)",
+     "link": "WPP: 21 96983-0983",
+     "fav": true
+    }
+   ],
+   "id": "it40"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Chinelo + Sacola + Tag Vale Conforto",
+   "prioridade": "baixa",
+   "valorEstimado": 352.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "WPP: 21 96983-0984",
+   "observacoes": "Item opcional (\"talvez\").",
+   "opcoes": [
+    {
+     "total": 600.0,
+     "unid": "30 unid (?)",
+     "obs": "Grafica AM 24h (21 96983-0983)",
+     "link": "WPP: 21 96983-0984",
+     "fav": false
+    },
+    {
+     "total": 360.0,
+     "unid": "",
+     "obs": "",
+     "link": "",
+     "fav": false
+    },
+    {
+     "total": 352.0,
+     "unid": "",
+     "obs": "",
+     "link": "",
+     "fav": true
+    }
+   ],
+   "id": "it41"
+  },
+  {
+   "categoria": "Festa",
+   "descricao": "Canudos Meu Rosto",
+   "prioridade": "media",
+   "valorEstimado": 80.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "50 unidades",
+   "link": "https://shopee.com.br/product/291268755/21497998765",
+   "observacoes": "",
+   "opcoes": [
+    {
+     "total": 100.0,
+     "unid": "50 unid",
+     "obs": "x",
+     "link": "https://www.elo7.com.br/canudo-personalizado-com-foto-rosto-face-formatura-drinks/dp/20DE68F",
+     "fav": false
+    },
+    {
+     "total": 80.0,
+     "unid": "50 unidades",
+     "obs": "gostei! Imagem é contornada",
+     "link": "https://shopee.com.br/product/291268755/22493495995",
+     "fav": false
+    },
+    {
+     "total": 99.9,
+     "unid": "80 unidades",
+     "obs": "se eu quiser 80 vale a pena. Imagem quadrada",
+     "link": "https://shopee.com.br/product/291268755/44160383070",
+     "fav": false
+    },
+    {
+     "total": 80.0,
+     "unid": "50 unidades",
+     "obs": "imagem contornada + canudo preto e branco",
+     "link": "https://shopee.com.br/product/348751100/19598316134",
+     "fav": false
+    },
+    {
+     "total": 80.0,
+     "unid": "50 unidades",
+     "obs": "gostei! Imagem contornada + escolho se rosto ou rosto + peito / OTIMA QLDD",
+     "link": "https://shopee.com.br/product/291268755/21497998765",
+     "fav": true
+    },
+    {
+     "total": 99.9,
+     "unid": "80 unidades",
+     "obs": "x",
+     "link": "https://shopee.com.br/Canudinho-para-Drinks-Personalizado-com-sua-foto-para-Festas-de-Formatura-Anivers%C3%A1rio-Eventos-Canudo-Bebida-i.291268755.44160383070",
+     "fav": false
+    }
+   ],
+   "id": "it42"
+  },
+  {
+   "categoria": "Festa",
+   "descricao": "Máscara Meu Rosto Grande",
+   "prioridade": "media",
+   "valorEstimado": 85.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "10 unidades",
+   "link": "https://shopee.com.br/Plaquinha-Divertida-Placa-Mascara-para-anivers%C3%A1rio-com-sua-foto-personalizada-toppers-de-docinhos-com-seu-rosto-i.291268755.18999185533",
+   "observacoes": "",
+   "opcoes": [
+    {
+     "total": 209.70000000000002,
+     "unid": "30 unid",
+     "obs": "x",
+     "link": "https://www.elo7.com.br/mascaras-personalizadas-rosto-para-festas-e-formaturas/dp/20A5FCD",
+     "fav": false
+    },
+    {
+     "total": 204.0,
+     "unid": "30 unid",
+     "obs": "não preciso comprar 30.",
+     "link": "https://www.elo7.com.br/10-mascaras-plaquinha-de-rosto-festas-e-formaturas-exp/dp/20386A8",
+     "fav": false
+    },
+    {
+     "total": 95.0,
+     "unid": "15 unid",
+     "obs": "x",
+     "link": "https://shopee.com.br/product/348751100/23398915172",
+     "fav": false
+    },
+    {
+     "total": 53.9,
+     "unid": "5 unidades",
+     "obs": "x",
+     "link": "https://shopee.com.br/Kit-5-M%C3%A1scaras-Personalizadas-Despedida-de-solteiro-Noiva-Noivo-Eventos-i.348751100.23294418723",
+     "fav": false
+    },
+    {
+     "total": 85.0,
+     "unid": "10 unidades",
+     "obs": "Toppers é topo de docinho. Não pedir isso. Pedir apenas \"10 placas\" no link",
+     "link": "https://shopee.com.br/Plaquinha-Divertida-Placa-Mascara-para-anivers%C3%A1rio-com-sua-foto-personalizada-toppers-de-docinhos-com-seu-rosto-i.291268755.18999185533",
+     "fav": true
+    }
+   ],
+   "id": "it43"
+  },
+  {
+   "categoria": "Festa",
+   "descricao": "Óculos",
+   "prioridade": "media",
+   "valorEstimado": 108.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "30 unid",
+   "link": "https://shopee.com.br/product/1598052826/22694714440",
+   "observacoes": "",
+   "opcoes": [
+    {
+     "total": 162.0,
+     "unid": "30 unid",
+     "obs": "tem q fzr os adesivos na grafica",
+     "link": "https://produto.mercadolivre.com.br/MLB-5297536030-kit-10-oculos-festa-retro-casamento-evento-balada-despedidas-_JM",
+     "fav": false
+    },
+    {
+     "total": 23.8,
+     "unid": "1 unid",
+     "obs": "oculos FORMEI em gatinho",
+     "link": "https://produto.mercadolivre.com.br/MLB-4525604552-oculos-de-sol-gatinho-formei-blogueira-formatura-festa-_JM",
+     "fav": false
+    },
+    {
+     "total": 149.7,
+     "unid": "30 unid",
+     "obs": "tem q fzr os adesivos na grafica",
+     "link": "https://produto.mercadolivre.com.br/MLB-3637564533-kit-15-oculos-cores-festa-evento-formatura-caneta-giz-top-_JM",
+     "fav": false
+    },
+    {
+     "total": 108.0,
+     "unid": "30 unid",
+     "obs": "tem q fzr os adesivos na grafica! MELHOR PREÇO",
+     "link": "https://shopee.com.br/product/1598052826/22694714440",
+     "fav": true
+    },
+    {
+     "total": 312.0,
+     "unid": "30 unid",
+     "obs": "personalizado!",
+     "link": "https://shopee.com.br/Kit-Oculos-Retro-Personalizado-5-A-30-UNI-Com-Frase-Para-Festas-i.1544133360.23494044060",
+     "fav": false
+    },
+    {
+     "total": 366.0,
+     "unid": "30 unid",
+     "obs": "personalizado!",
+     "link": "https://shopee.com.br/kit-com-40-20-30-10-%C3%93CULOS-PERSONALIZADO-PARA-FORMATURA-CASAMENTO-ANIVERS%C3%81RIO-RAVES-SHOWS-i.922694071.23112878400",
+     "fav": false
+    },
+    {
+     "total": 156.0,
+     "unid": "30 unid",
+     "obs": "não é personalizado - PROMO",
+     "link": "https://shopee.com.br/Kit-30-20-10-Oculos-Vintage-Retro-Preto-Liso-Caneta-Giz-Festa-Casamento-Evento-Balada-Despedidas-Cor-Preto-i.1356795237.21899573647",
+     "fav": false
+    }
+   ],
+   "id": "it44"
+  },
+  {
+   "categoria": "Festa",
+   "descricao": "Bastão De Luz",
+   "prioridade": "media",
+   "valorEstimado": 116.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "30 unid",
+   "link": "https://www.mercadolivre.com.br/kit-15-bastao-festa-led-neon-espuma-formatura-balada-rave/up/MLBU3257349377",
+   "observacoes": "",
+   "opcoes": [
+    {
+     "total": 200.0,
+     "unid": "40 unid",
+     "obs": "tem q fzr os adesivos na grafica",
+     "link": "https://produto.mercadolivre.com.br/MLB-5379600660-kit-20-basto-led-neon-espuma-formatura-balada-festa-_JM",
+     "fav": false
+    },
+    {
+     "total": 116.0,
+     "unid": "30 unid",
+     "obs": "tem q fzr os adesivos na grafica",
+     "link": "https://www.mercadolivre.com.br/kit-15-bastao-festa-led-neon-espuma-formatura-balada-rave/up/MLBU3257349377",
+     "fav": true
+    },
+    {
+     "total": 135.0,
+     "unid": "30 unid",
+     "obs": "tem q fzr os adesivos na grafica",
+     "link": "https://shopee.com.br/product/1176617439/23694214194",
+     "fav": false
+    },
+    {
+     "total": 250.0,
+     "unid": "20 unid",
+     "obs": "250 reais com 20 unid / 135 reais com 10 unid -> 30 unid dá 385 / já e personalziado",
+     "link": "https://shopee.com.br/Bast%C3%A3o-Luminoso-Personalizado-i.922694071.22319137483",
+     "fav": false
+    }
+   ],
+   "id": "it45"
+  },
+  {
+   "categoria": "Festa",
+   "descricao": "Toten De Mesa",
+   "prioridade": "media",
+   "valorEstimado": 42.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "3 unidades",
+   "link": "https://shopee.com.br/Kit-2-e-3-totens-de-Mesa-Formatura-personalizados-i.309517288.23394312441",
+   "observacoes": "",
+   "opcoes": [
+    {
+     "total": 42.0,
+     "unid": "3 unidades",
+     "obs": "QLDD MT BOA",
+     "link": "https://shopee.com.br/Kit-2-e-3-totens-de-Mesa-Formatura-personalizados-i.309517288.23394312441",
+     "fav": true
+    }
+   ],
+   "id": "it46"
+  },
+  {
+   "categoria": "Festa",
+   "descricao": "Pulseira Led Musica",
+   "prioridade": "baixa",
+   "valorEstimado": 450.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "30 unidades",
+   "link": "https://www.funpersonalize.com.br/pulseira-de-led",
+   "observacoes": "",
+   "opcoes": [
+    {
+     "total": 450.0,
+     "unid": "30 unidades",
+     "obs": "x",
+     "link": "https://www.funpersonalize.com.br/pulseira-de-led",
+     "fav": true
+    }
+   ],
+   "id": "it47"
+  },
+  {
+   "categoria": "Homenagens",
+   "descricao": "Placa tumulo",
+   "prioridade": "baixa",
+   "valorEstimado": 60.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "1 unidade",
+   "link": "https://shopee.com.br/Placa-T%C3%BAmulo-L%C3%A1pide-Homenagem-15x20cm-Prata-i.386557922.21004844705",
+   "observacoes": "",
+   "opcoes": [
+    {
+     "total": 60.0,
+     "unid": "1 unidade",
+     "obs": "",
+     "link": "https://shopee.com.br/Placa-T%C3%BAmulo-L%C3%A1pide-Homenagem-15x20cm-Prata-i.386557922.21004844705",
+     "fav": true
+    }
+   ],
+   "id": "it48"
+  },
+  {
+   "categoria": "Lembrancinhas",
+   "descricao": "Frascos vazios p/ Gloss + adesivos",
+   "prioridade": "media",
+   "valorEstimado": 30.0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "10 unidades",
+   "link": "https://www.mercadolivre.com.br/10-frasco-gloss-labial-lipgloss-hidratante-batom-vazio/p/MLB32986725",
+   "observacoes": "",
+   "opcoes": [
+    {
+     "total": 70.0,
+     "unid": "30 unidades",
+     "obs": "mini frascos vazios",
+     "link": "https://produto.mercadolivre.com.br/MLB-2921292425-kit-30-mini-frasco-de-batom-ou-gloss-labial-vazio-12ml-_JM",
+     "fav": false
+    },
+    {
+     "total": 50.0,
+     "unid": "20 unidades",
+     "obs": "mini frascos vazios - tampa douraDA",
+     "link": "https://shopee.com.br/kit-20-Refil-Frasco-Gloss-ou-Amostra-Batom-mini-tubo-batom-maquiagem-i.411828567.22616005909",
+     "fav": false
+    },
+    {
+     "total": null,
+     "unid": "",
+     "obs": "olhar essa loja",
+     "link": "https://www.rnembalagens.com.br/frasco-de-gloss-vazio-luxo-4-ml-com-pincel-kit-com-4-unid",
+     "fav": false
+    },
+    {
+     "total": 30.0,
+     "unid": "10 unidades",
+     "obs": "mini frascos vazios tampa rosé",
+     "link": "https://www.mercadolivre.com.br/10-frasco-gloss-labial-lipgloss-hidratante-batom-vazio/p/MLB32986725",
+     "fav": true
+    },
+    {
+     "total": 60.0,
+     "unid": "50 unidades",
+     "obs": "mini frascos tampa preta pequena",
+     "link": "https://shopee.com.br/Kit-50-Mini-Porta-Gloss-e-Batom-Embalagem-de-Maquiagem-Mimo-Cliente-Maquiagem-Frasco-Tubete-Beleza-i.1455006185.22893667705",
+     "fav": false
+    },
+    {
+     "total": 33.0,
+     "unid": "30 unidades",
+     "obs": "mini frascos TAMPA DOURADA",
+     "link": "https://shopee.com.br/%F0%9F%92%84-KIT-10-TUBOS-Gloss-Vazio-1.2ml-Recarreg%C3%A1vel-Viagem!-i.854633293.21249683150",
+     "fav": false
+    },
+    {
+     "total": 34.0,
+     "unid": "1 unidade",
+     "obs": "rosa claro glitter",
+     "link": "https://shopee.com.br/product/1006215031/44269907247",
+     "fav": false
+    },
+    {
+     "total": 35.9,
+     "unid": "50 unidades",
+     "obs": "",
+     "link": "https://shopee.com.br/etiquetas-adesivos-vinil-transparente-para-personalizado-para-gloss-labial-ou-embalagens-i.281493224.19398278387",
+     "fav": false
+    },
+    {
+     "total": 35.9,
+     "unid": "50 unidades",
+     "obs": "",
+     "link": "https://www.mercadolivre.com.br/50-adesivos-etiquetas-vinil-personalizado-para-gloss-labial/up/MLBU3332768667",
+     "fav": false
+    }
+   ],
+   "id": "it49"
+  },
+  {
+   "categoria": "Convites",
+   "descricao": "Convite oficial / taxa da comissão de formatura",
+   "prioridade": "alta",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it50"
+  },
+  {
+   "categoria": "Convites",
+   "descricao": "Convite/Save the date digital",
+   "prioridade": "media",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it51"
+  },
+  {
+   "categoria": "Convites",
+   "descricao": "Lista de convites impressos para entregar",
+   "prioridade": "alta",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it52"
+  },
+  {
+   "categoria": "Vestido",
+   "descricao": "Vestido do baile de gala",
+   "prioridade": "alta",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it53"
+  },
+  {
+   "categoria": "Vestido",
+   "descricao": "Vestido da colação de grau",
+   "prioridade": "alta",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it54"
+  },
+  {
+   "categoria": "Vestido",
+   "descricao": "Vestido da missa/culto de formatura",
+   "prioridade": "media",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it55"
+  },
+  {
+   "categoria": "Sapatos",
+   "descricao": "Sapato do baile",
+   "prioridade": "alta",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it56"
+  },
+  {
+   "categoria": "Sapatos",
+   "descricao": "Sapato reserva confortável p/ a festa",
+   "prioridade": "media",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it57"
+  },
+  {
+   "categoria": "Acessórios",
+   "descricao": "Joias / brincos / colar",
+   "prioridade": "media",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it58"
+  },
+  {
+   "categoria": "Acessórios",
+   "descricao": "Clutch / bolsa de mão",
+   "prioridade": "baixa",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it59"
+  },
+  {
+   "categoria": "Cabelo",
+   "descricao": "Cabeleireiro / penteado (dia)",
+   "prioridade": "alta",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it60"
+  },
+  {
+   "categoria": "Cabelo",
+   "descricao": "Teste de penteado",
+   "prioridade": "baixa",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it61"
+  },
+  {
+   "categoria": "Maquiagem",
+   "descricao": "Maquiagem profissional (dia)",
+   "prioridade": "alta",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it62"
+  },
+  {
+   "categoria": "Maquiagem",
+   "descricao": "Teste de maquiagem",
+   "prioridade": "baixa",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it63"
+  },
+  {
+   "categoria": "Maquiagem",
+   "descricao": "Cílios / unhas / sobrancelha",
+   "prioridade": "media",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it64"
+  },
+  {
+   "categoria": "Fotos",
+   "descricao": "Fotógrafo / making of",
+   "prioridade": "alta",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it65"
+  },
+  {
+   "categoria": "Fotos",
+   "descricao": "Ensaio externo / book",
+   "prioridade": "media",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it66"
+  },
+  {
+   "categoria": "Fotos",
+   "descricao": "Vídeo / filmagem",
+   "prioridade": "media",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it67"
+  },
+  {
+   "categoria": "Fotos",
+   "descricao": "Álbum impresso",
+   "prioridade": "baixa",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it68"
+  },
+  {
+   "categoria": "Festa",
+   "descricao": "Buffet / comida",
+   "prioridade": "alta",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it69"
+  },
+  {
+   "categoria": "Festa",
+   "descricao": "DJ ou banda",
+   "prioridade": "alta",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it70"
+  },
+  {
+   "categoria": "Festa",
+   "descricao": "Espaço / salão da festa",
+   "prioridade": "alta",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it71"
+  },
+  {
+   "categoria": "Festa",
+   "descricao": "Bolo / mesa de doces",
+   "prioridade": "media",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it72"
+  },
+  {
+   "categoria": "Festa",
+   "descricao": "Bar / drinks / bartender",
+   "prioridade": "media",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it73"
+  },
+  {
+   "categoria": "Homenagens",
+   "descricao": "Homenagem aos pais",
+   "prioridade": "media",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it74"
+  },
+  {
+   "categoria": "Homenagens",
+   "descricao": "Discurso / juramento",
+   "prioridade": "baixa",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it75"
+  },
+  {
+   "categoria": "Decoração",
+   "descricao": "Decoração da mesa / cenário",
+   "prioridade": "media",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it76"
+  },
+  {
+   "categoria": "Decoração",
+   "descricao": "Flores / arranjos",
+   "prioridade": "baixa",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it77"
+  },
+  {
+   "categoria": "Documentação",
+   "descricao": "Beca e capelo (aluguel)",
+   "prioridade": "alta",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it78"
+  },
+  {
+   "categoria": "Documentação",
+   "descricao": "Documentos para colação (RG/CPF/histórico)",
+   "prioridade": "alta",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it79"
+  },
+  {
+   "categoria": "Viagem",
+   "descricao": "Hospedagem para convidados de fora",
+   "prioridade": "baixa",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it80"
+  },
+  {
+   "categoria": "Viagem",
+   "descricao": "Viagem pós-formatura",
+   "prioridade": "baixa",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it81"
+  },
+  {
+   "categoria": "Outros",
+   "descricao": "Day spa / autocuidado pré-formatura",
+   "prioridade": "baixa",
+   "valorEstimado": 0,
+   "valorReal": null,
+   "status": "pendente",
+   "dataPrevista": "",
+   "dataCompra": "",
+   "unidade": "",
+   "link": "",
+   "observacoes": "Sugerido — preencha o valor.",
+   "opcoes": [],
+   "sugerido": true,
+   "id": "it82"
+  }
+ ],
+ "guests": [
+  {
+   "id": "g1",
+   "nome": "Junior",
+   "apelido": "",
+   "grupo": "Família",
+   "telefone": "",
+   "cidade": "",
+   "obs": "Convite gratuito",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": true
+  },
+  {
+   "id": "g2",
+   "nome": "Pai",
+   "apelido": "",
+   "grupo": "Família",
+   "telefone": "",
+   "cidade": "",
+   "obs": "Convite gratuito",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": true
+  },
+  {
+   "id": "g3",
+   "nome": "Karla",
+   "apelido": "",
+   "grupo": "Amigos",
+   "telefone": "",
+   "cidade": "",
+   "obs": "Convite gratuito",
+   "tamanhoChinelo": "36",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": true
+  },
+  {
+   "id": "g4",
+   "nome": "Tia Elisete",
+   "apelido": "",
+   "grupo": "Família",
+   "telefone": "",
+   "cidade": "",
+   "obs": "Convite gratuito",
+   "tamanhoChinelo": "35",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": true
+  },
+  {
+   "id": "g5",
+   "nome": "Douglas",
+   "apelido": "",
+   "grupo": "Amigos",
+   "telefone": "",
+   "cidade": "",
+   "obs": "",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": false
+  },
+  {
+   "id": "g6",
+   "nome": "Juninho",
+   "apelido": "",
+   "grupo": "Família",
+   "telefone": "",
+   "cidade": "",
+   "obs": "Convite gratuito",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": true
+  },
+  {
+   "id": "g7",
+   "nome": "Jú",
+   "apelido": "",
+   "grupo": "Amigos",
+   "telefone": "",
+   "cidade": "",
+   "obs": "",
+   "tamanhoChinelo": "37",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": false
+  },
+  {
+   "id": "g8",
+   "nome": "Pedro",
+   "apelido": "",
+   "grupo": "Amigos",
+   "telefone": "",
+   "cidade": "",
+   "obs": "Convite gratuito",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": true
+  },
+  {
+   "id": "g9",
+   "nome": "Tio Liu",
+   "apelido": "",
+   "grupo": "Família",
+   "telefone": "",
+   "cidade": "",
+   "obs": "Convite gratuito",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": true
+  },
+  {
+   "id": "g10",
+   "nome": "Tio Elizeu?",
+   "apelido": "",
+   "grupo": "Família",
+   "telefone": "",
+   "cidade": "",
+   "obs": "",
+   "tamanhoChinelo": "36",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": false
+  },
+  {
+   "id": "g11",
+   "nome": "Tio Isaias",
+   "apelido": "",
+   "grupo": "Família",
+   "telefone": "",
+   "cidade": "",
+   "obs": "Convite gratuito",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": true
+  },
+  {
+   "id": "g12",
+   "nome": "Elias Gustavo",
+   "apelido": "",
+   "grupo": "Amigos",
+   "telefone": "",
+   "cidade": "",
+   "obs": "Convite gratuito",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": true
+  },
+  {
+   "id": "g13",
+   "nome": "Lana",
+   "apelido": "",
+   "grupo": "Amigos",
+   "telefone": "",
+   "cidade": "",
+   "obs": "",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": false
+  },
+  {
+   "id": "g14",
+   "nome": "Rafael",
+   "apelido": "",
+   "grupo": "Amigos",
+   "telefone": "",
+   "cidade": "",
+   "obs": "",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": false
+  },
+  {
+   "id": "g15",
+   "nome": "Tia Nilda",
+   "apelido": "",
+   "grupo": "Família",
+   "telefone": "",
+   "cidade": "",
+   "obs": "Convite gratuito",
+   "tamanhoChinelo": "37",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": true
+  },
+  {
+   "id": "g16",
+   "nome": "Julia",
+   "apelido": "",
+   "grupo": "Amigos",
+   "telefone": "",
+   "cidade": "",
+   "obs": "Convite gratuito",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": true
+  },
+  {
+   "id": "g17",
+   "nome": "Tio Abel",
+   "apelido": "",
+   "grupo": "Família",
+   "telefone": "",
+   "cidade": "",
+   "obs": "Convite gratuito",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": true
+  },
+  {
+   "id": "g18",
+   "nome": "Tia Concebida",
+   "apelido": "",
+   "grupo": "Família",
+   "telefone": "",
+   "cidade": "",
+   "obs": "",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": false
+  },
+  {
+   "id": "g19",
+   "nome": "Tia Laiz",
+   "apelido": "",
+   "grupo": "Família",
+   "telefone": "",
+   "cidade": "",
+   "obs": "",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": false
+  },
+  {
+   "id": "g20",
+   "nome": "Tia Nenzinha",
+   "apelido": "",
+   "grupo": "Família",
+   "telefone": "",
+   "cidade": "",
+   "obs": "",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": false
+  },
+  {
+   "id": "g21",
+   "nome": "Vavá",
+   "apelido": "",
+   "grupo": "Família",
+   "telefone": "",
+   "cidade": "",
+   "obs": "",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": false
+  },
+  {
+   "id": "g22",
+   "nome": "Josete",
+   "apelido": "",
+   "grupo": "Amigos",
+   "telefone": "",
+   "cidade": "",
+   "obs": "Convite gratuito",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": true
+  },
+  {
+   "id": "g23",
+   "nome": "Paula",
+   "apelido": "",
+   "grupo": "Amigos",
+   "telefone": "",
+   "cidade": "",
+   "obs": "Convite gratuito",
+   "tamanhoChinelo": "38",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": true
+  },
+  {
+   "id": "g24",
+   "nome": "Rosinha",
+   "apelido": "",
+   "grupo": "Amigos",
+   "telefone": "",
+   "cidade": "",
+   "obs": "Convite gratuito",
+   "tamanhoChinelo": "37",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": true
+  },
+  {
+   "id": "g25",
+   "nome": "Irma Rosinha",
+   "apelido": "",
+   "grupo": "Família",
+   "telefone": "",
+   "cidade": "",
+   "obs": "",
+   "tamanhoChinelo": "37",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": false
+  },
+  {
+   "id": "g26",
+   "nome": "Tia Leia",
+   "apelido": "",
+   "grupo": "Família",
+   "telefone": "",
+   "cidade": "",
+   "obs": "Convite gratuito",
+   "tamanhoChinelo": "39 (confirmar)",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": true
+  },
+  {
+   "id": "g27",
+   "nome": "Tia Dilane",
+   "apelido": "",
+   "grupo": "Família",
+   "telefone": "",
+   "cidade": "",
+   "obs": "",
+   "tamanhoChinelo": "39",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": false
+  },
+  {
+   "id": "g28",
+   "nome": "Helder",
+   "apelido": "",
+   "grupo": "Amigos",
+   "telefone": "",
+   "cidade": "",
+   "obs": "",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": false
+  },
+  {
+   "id": "g29",
+   "nome": "Naty",
+   "apelido": "",
+   "grupo": "Amigos",
+   "telefone": "",
+   "cidade": "",
+   "obs": "Convite gratuito",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": true
+  },
+  {
+   "id": "g30",
+   "nome": "Hilda",
+   "apelido": "",
+   "grupo": "Amigos",
+   "telefone": "",
+   "cidade": "",
+   "obs": "Convite gratuito",
+   "tamanhoChinelo": "37",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": true
+  },
+  {
+   "id": "g31",
+   "nome": "Naila?",
+   "apelido": "",
+   "grupo": "Amigos",
+   "telefone": "",
+   "cidade": "",
+   "obs": "",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": false
+  },
+  {
+   "id": "g32",
+   "nome": "Marcelo",
+   "apelido": "",
+   "grupo": "Amigos",
+   "telefone": "",
+   "cidade": "",
+   "obs": "Convite gratuito",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": true
+  },
+  {
+   "id": "g33",
+   "nome": "Deiv",
+   "apelido": "",
+   "grupo": "Amigos",
+   "telefone": "",
+   "cidade": "",
+   "obs": "Convite gratuito",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": true
+  },
+  {
+   "id": "g34",
+   "nome": "Fany",
+   "apelido": "",
+   "grupo": "Amigos",
+   "telefone": "",
+   "cidade": "",
+   "obs": "",
+   "tamanhoChinelo": "35",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": false
+  },
+  {
+   "id": "g35",
+   "nome": "Milla",
+   "apelido": "",
+   "grupo": "Amigos",
+   "telefone": "",
+   "cidade": "",
+   "obs": "",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": false
+  },
+  {
+   "id": "g36",
+   "nome": "Cinthya",
+   "apelido": "",
+   "grupo": "Amigos",
+   "telefone": "",
+   "cidade": "",
+   "obs": "",
+   "tamanhoChinelo": "37",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": false
+  },
+  {
+   "id": "g37",
+   "nome": "Daiene",
+   "apelido": "",
+   "grupo": "Amigos",
+   "telefone": "",
+   "cidade": "",
+   "obs": "",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": false
+  },
+  {
+   "id": "g38",
+   "nome": "Joyce",
+   "apelido": "",
+   "grupo": "Amigos",
+   "telefone": "",
+   "cidade": "",
+   "obs": "",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": false
+  },
+  {
+   "id": "g39",
+   "nome": "Amanda?",
+   "apelido": "",
+   "grupo": "Amigos",
+   "telefone": "",
+   "cidade": "",
+   "obs": "",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": false
+  },
+  {
+   "id": "g40",
+   "nome": "Lucinha",
+   "apelido": "",
+   "grupo": "Amigos",
+   "telefone": "",
+   "cidade": "",
+   "obs": "",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": false
+  },
+  {
+   "id": "g41",
+   "nome": "Nildo",
+   "apelido": "",
+   "grupo": "Amigos",
+   "telefone": "",
+   "cidade": "",
+   "obs": "",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": false
+  },
+  {
+   "id": "g42",
+   "nome": "Rosangela prima",
+   "apelido": "",
+   "grupo": "Família",
+   "telefone": "",
+   "cidade": "",
+   "obs": "",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": false
+  },
+  {
+   "id": "g43",
+   "nome": "Lara",
+   "apelido": "",
+   "grupo": "Amigos",
+   "telefone": "",
+   "cidade": "",
+   "obs": "",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": false
+  },
+  {
+   "id": "g44",
+   "nome": "Adriano",
+   "apelido": "",
+   "grupo": "Amigos",
+   "telefone": "",
+   "cidade": "",
+   "obs": "",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": false
+  },
+  {
+   "id": "g45",
+   "nome": "Elmo",
+   "apelido": "",
+   "grupo": "Amigos",
+   "telefone": "",
+   "cidade": "",
+   "obs": "",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": false
+  },
+  {
+   "id": "g46",
+   "nome": "Luciana Escola!!",
+   "apelido": "",
+   "grupo": "Trabalho",
+   "telefone": "",
+   "cidade": "",
+   "obs": "Convite gratuito",
+   "tamanhoChinelo": "37",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": true
+  },
+  {
+   "id": "g47",
+   "nome": "Marido Luciana",
+   "apelido": "",
+   "grupo": "Trabalho",
+   "telefone": "",
+   "cidade": "",
+   "obs": " • (ele vai comprar)",
+   "tamanhoChinelo": "",
+   "conviteEnviado": false,
+   "conviteEntregue": false,
+   "status": "aguardando",
+   "acompanhantes": 0,
+   "dataConfirmacao": "",
+   "vip": false
+  }
+ ]
+}</script>
+<script>
+/* =====================================================================
+   PLANEJADOR DE FORMATURA  — app de arquivo único (vanilla JS)
+   Dados persistidos em localStorage. Funciona offline.
+   ===================================================================== */
+(function(){
+"use strict";
+const KEY="formaturaPlanner_v1";
+const SEED=JSON.parse(document.getElementById("seed-data").textContent);
+
+/* ---------- State ---------- */
+let S=load();
+let ui={tab:"dash",itemFilter:{q:"",cat:"",pri:"",st:""},itemSort:"prioridade",itemView:"lista",
+        guestFilter:{q:"",grupo:"",st:"",cidade:""},guestView:"tabela",simSave:null,simStart:null};
+
+function load(){
+  try{const raw=localStorage.getItem(KEY);if(raw)return migrate(JSON.parse(raw));}catch(e){}
+  return clone(SEED);
+}
+function migrate(d){ // ensure shape
+  d.config=Object.assign(clone(SEED.config),d.config||{});
+  d.categorias=d.categorias||clone(SEED.categorias);
+  d.gruposConvidados=d.gruposConvidados||clone(SEED.gruposConvidados);
+  d.items=d.items||[]; d.guests=d.guests||[];
+  return d;
+}
+let saveT;
+function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify({
+  config:S.config,categorias:S.categorias,gruposConvidados:S.gruposConvidados,items:S.items,guests:S.guests
+}));}catch(e){toast("Erro ao salvar (armazenamento cheio?)");}},120);}
+function clone(o){return JSON.parse(JSON.stringify(o));}
+
+/* ---------- Helpers ---------- */
+const cur=()=>S.config.moeda||"R$";
+function money(v){v=Number(v||0);return cur()+" "+v.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});}
+function money0(v){v=Number(v||0);return cur()+" "+v.toLocaleString("pt-BR",{maximumFractionDigits:0});}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function uid(p){return p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+const PRI={alta:{l:"Alta",w:0},media:{l:"Média",w:1},baixa:{l:"Baixa",w:2}};
+const MES=["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+const MESF=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+function fmtDate(s){if(!s)return"";const d=new Date(s+"T00:00:00");if(isNaN(d))return s;return d.toLocaleDateString("pt-BR");}
+function today(){return new Date();}
+function daysUntil(s){if(!s)return null;const d=new Date(s+"T00:00:00");if(isNaN(d))return null;return Math.ceil((d-today())/864e5);}
+function monthLabel(offset){const d=new Date();d.setDate(1);d.setMonth(d.getMonth()+offset);return MES[d.getMonth()]+"/"+String(d.getFullYear()).slice(2);}
+function monthLabelFull(offset){const d=new Date();d.setDate(1);d.setMonth(d.getMonth()+offset);return MESF[d.getMonth()]+" de "+d.getFullYear();}
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),2200);}
+
+/* ---------- Derived metrics ---------- */
+function itemVal(i){return i.status==="comprado"&&i.valorReal!=null?Number(i.valorReal):Number(i.valorEstimado||0);}
+function metrics(){
+  const it=S.items;
+  const comprados=it.filter(i=>i.status==="comprado");
+  const pendentes=it.filter(i=>i.status!=="comprado");
+  const totalPrevisto=it.reduce((s,i)=>s+itemVal(i),0);
+  const gasto=comprados.reduce((s,i)=>s+itemVal(i),0);
+  const pendenteVal=pendentes.reduce((s,i)=>s+Number(i.valorEstimado||0),0);
+  const meta=Number(S.config.metaFinanceira||totalPrevisto);
+  const pct=it.length?Math.round(comprados.length/it.length*100):0;
+  const pctVal=totalPrevisto?Math.round(gasto/totalPrevisto*100):0;
+  return {comprados,pendentes,totalPrevisto,gasto,pendenteVal,meta,pct,pctVal,restante:Math.max(0,meta-gasto)};
+}
+
+/* ---------- Finance simulation (purchase schedule) ---------- */
+function purchaseQueue(){
+  // pending items with a price > 0, ordered by deadline urgency -> priority -> cheaper first
+  return S.items.filter(i=>i.status!=="comprado"&&Number(i.valorEstimado)>0)
+    .map(i=>({i,d:daysUntil(i.dataPrevista)}))
+    .sort((a,b)=>{
+      const da=a.d==null?1e9:a.d, db=b.d==null?1e9:b.d;
+      if(da<60||db<60){if(da!==db)return da-db;}
+      const pa=PRI[a.i.prioridade]?.w??1, pb=PRI[b.i.prioridade]?.w??1;
+      if(pa!==pb)return pa-pb;
+      return Number(a.i.valorEstimado)-Number(b.i.valorEstimado);
+    }).map(x=>x.i);
+}
+function simulate(saveMonth,startBal){
+  saveMonth=Number(saveMonth??(S.config.economiaMensal||0));
+  startBal=Number(startBal??(S.config.saldoAtual||0));
+  const queue=purchaseQueue();
+  const predicted={}; const months=[]; let bal=startBal; const MAX=72; let mi=0; let done=true;
+  if(saveMonth<=0 && queue.reduce((s,i)=>s+Number(i.valorEstimado),0)>startBal){done=false;}
+  while(queue.length){
+    const before=bal; bal+=(mi===0?0:saveMonth)+(mi===0?saveMonth:0); // add savings each month incl month0
+    const buys=[];
+    while(queue.length && Number(queue[0].valorEstimado)<=bal+1e-6){
+      const it=queue.shift(); bal-=Number(it.valorEstimado); predicted[it.id]=mi; buys.push(it);
+    }
+    months.push({mi,label:monthLabel(mi),labelFull:monthLabelFull(mi),before,added:saveMonth,after:bal,buys});
+    mi++;
+    if(mi>MAX){done=false;break;}
+    if(!queue.length)break;
+    if(saveMonth<=0)break;
+  }
+  return {months,predicted,doneMonth:months.length?months[months.length-1].mi:0,finished:queue.length===0&&done,saveMonth,startBal};
+}
+
+/* ===================================================================
+   ICONS
+   =================================================================== */
+const IC={
+ dash:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>',
+ fin:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M3 3v18h18"/><path d="M7 14l3-4 3 3 5-7"/></svg>',
+ items:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4.5 6l.8.8L7 5"/><path d="M4.5 12l.8.8L7 11"/><path d="M4.5 18l.8.8L7 17"/></svg>',
+ tl:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="6" cy="6" r="2.4"/><circle cx="6" cy="18" r="2.4"/><path d="M6 8.5v7"/><path d="M11 6h9M11 18h9"/></svg>',
+ strat:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg>',
+ guests:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c0-3.2 2.6-5.5 5.5-5.5s5.5 2.3 5.5 5.5"/><path d="M16 5.5a3 3 0 0 1 0 5.8M17.5 14.6c2 .7 3.5 2.6 3.5 5"/></svg>',
+ rep:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 2h8l4 4v16H6z"/><path d="M14 2v4h4"/><path d="M9 13h6M9 17h6"/></svg>',
+ cfg:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.6-2-3.4-2.3 1a7 7 0 0 0-1.7-1l-.3-2.5h-4l-.3 2.5a7 7 0 0 0-1.7 1l-2.3-1-2 3.4 2 1.6a7 7 0 0 0 0 2l-2 1.6 2 3.4 2.3-1a7 7 0 0 0 1.7 1l.3 2.5h4l.3-2.5a7 7 0 0 0 1.7-1l2.3 1 2-3.4-2-1.6c.1-.3.1-.7.1-1z"/></svg>',
+ search:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>',
+ plus:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>',
+ ext:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 4h6v6M20 4l-9 9M19 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"/></svg>'
+};
+const NAV=[
+ {id:"dash",ic:"dash",t:"Painel"},
+ {id:"fin",ic:"fin",t:"Financeiro"},
+ {id:"items",ic:"items",t:"Itens & Checklist"},
+ {id:"timeline",ic:"tl",t:"Cronograma"},
+ {id:"strategy",ic:"strat",t:"Estratégia"},
+ {id:"guests",ic:"guests",t:"Convidados"},
+ {id:"reports",ic:"rep",t:"Relatórios"},
+ {id:"config",ic:"cfg",t:"Configurações"}
+];
+
+/* ===================================================================
+   SVG CHART HELPERS  (no external libs → offline)
+   =================================================================== */
+function donut(pct,size,label,sub){
+  size=size||150;const r=size/2-13,c=2*Math.PI*r,off=c*(1-pct/100);
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+   <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--surface-2)" stroke-width="13"/>
+   <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="url(#g1)" stroke-width="13" stroke-linecap="round"
+     stroke-dasharray="${c}" stroke-dashoffset="${off}" transform="rotate(-90 ${size/2} ${size/2})" style="transition:stroke-dashoffset .8s cubic-bezier(.2,.8,.2,1)"/>
+   <defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--accent)"/><stop offset="1" stop-color="var(--accent-2)"/></linearGradient></defs>
+   <text x="50%" y="47%" text-anchor="middle" font-size="${size*0.2}" font-weight="750" fill="var(--text)">${pct}%</text>
+   <text x="50%" y="63%" text-anchor="middle" font-size="${size*0.085}" fill="var(--text-3)">${esc(label||"")}</text>
+  </svg>`;
+}
+function hbars(data){ // [{label,val,color}]
+  const max=Math.max(1,...data.map(d=>d.val));
+  return `<div style="display:flex;flex-direction:column;gap:11px">`+data.map(d=>`
+    <div>
+      <div class="row between" style="font-size:13px;margin-bottom:5px"><span style="color:var(--text-2);font-weight:550">${esc(d.label)}</span><span style="font-weight:650;font-variant-numeric:tabular-nums">${d.fmt||d.val}</span></div>
+      <div class="bar"><span style="width:${d.val/max*100}%;background:${d.color||'linear-gradient(90deg,var(--accent),var(--accent-2))'}"></span></div>
+    </div>`).join("")+`</div>`;
+}
+
+/* ===================================================================
+   RENDER ROUTER
+   =================================================================== */
+function render(){
+  document.getElementById("brandName").textContent=S.config.nome||"Formatura";
+  document.getElementById("brandSub").textContent=(S.config.curso||"")||"Planejador";
+  // nav
+  const m=metrics();
+  const counts={items:S.items.length,guests:S.guests.length};
+  document.getElementById("nav").innerHTML=NAV.map(n=>`
+    <button class="nav-item ${ui.tab===n.id?'active':''}" onclick="UI.go('${n.id}')">
+      <span class="ico">${IC[n.ic]}</span>${n.t}
+      ${counts[n.id]!=null?`<span class="badge">${counts[n.id]}</span>`:""}
+    </button>`).join("");
+  const cur=NAV.find(n=>n.id===ui.tab)||NAV[0];
+  document.getElementById("pageTitle").textContent=cur.t;
+  document.getElementById("themeBtn").textContent=document.documentElement.dataset.theme==="dark"?"☀️":"🌙";
+  const v=document.getElementById("view"); const act=document.getElementById("topActions");
+  act.innerHTML="";
+  ({dash:viewDash,fin:viewFin,items:viewItems,timeline:viewTimeline,strategy:viewStrategy,
+    guests:viewGuests,reports:viewReports,config:viewConfig}[ui.tab]||viewDash)(v,act,m);
+}
+
+/* ===================================================================
+   1 · DASHBOARD
+   =================================================================== */
+function viewDash(v,act,m){
+  document.getElementById("pageSub").textContent=greeting();
+  act.innerHTML=`<button class="btn sm" onclick="UI.go('reports')">${IC.rep} <span class="hide-sm">Relatórios</span></button>
+    <button class="btn primary sm" onclick="UI.go('items')">${IC.plus} <span class="hide-sm">Novo item</span></button>`;
+  const dg=daysUntil(S.config.dataFormatura);
+  const sim=simulate();
+  const catVals={};S.items.forEach(i=>{catVals[i.categoria]=(catVals[i.categoria]||0)+itemVal(i);});
+  const catData=Object.entries(catVals).filter(([,x])=>x>0).sort((a,b)=>b[1]-a[1]).slice(0,7)
+    .map(([k,x])=>({label:k,val:x,fmt:money0(x)}));
+  const next=purchaseQueue().slice(0,4);
+  const alerts=deadlineAlerts();
+
+  v.innerHTML=`
+  <div class="card" style="background:linear-gradient(120deg,var(--accent),var(--accent-2));color:#fff;border:none;margin-bottom:18px">
+    <div class="row between wrap" style="gap:16px">
+      <div>
+        <div style="font-size:13px;opacity:.85;font-weight:600">${esc(S.config.frase||"Sua formatura, organizada.")}</div>
+        <div style="font-size:25px;font-weight:760;letter-spacing:-.6px;margin-top:4px">${esc(S.config.nome||"Formando(a)")}</div>
+        <div style="opacity:.9;font-size:14px;margin-top:2px">${esc(S.config.curso||"")}${S.config.instituicao?" · "+esc(S.config.instituicao):""}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:13px;opacity:.85;font-weight:600">${S.config.dataFormatura?"Formatura em":""}</div>
+        <div style="font-size:25px;font-weight:760;letter-spacing:-.5px">${S.config.dataFormatura?fmtDate(S.config.dataFormatura):"—"}</div>
+        ${dg!=null?`<div style="opacity:.9;font-size:14px;margin-top:2px">${dg>0?("faltam "+dg+" dias"):dg===0?"é hoje! 🎉":("há "+Math.abs(dg)+" dias")}</div>`:""}
+      </div>
+    </div>
+  </div>
+
+  <div class="grid kpis" style="margin-bottom:4px">
+    ${kpi("Conclusão",m.pct+"%","#"+'',m.comprados.length+" de "+S.items.length+" itens","var(--accent)")}
+    ${kpi("Comprados",m.comprados.length,"","itens concluídos","var(--ok)")}
+    ${kpi("Pendentes",m.pendentes.length,"","ainda a comprar","var(--warn)")}
+    ${kpi("Total previsto",money0(m.totalPrevisto),"","soma estimada","var(--info)")}
+    ${kpi("Já gasto",money0(m.gasto),"",m.pctVal+"% do previsto","var(--ok)")}
+    ${kpi("Falta gastar",money0(m.pendenteVal),"","valor pendente","var(--warn)")}
+    ${kpi("Meta financeira",money0(m.meta),"",dg!=null&&dg>0?("em ~"+Math.max(1,Math.round(dg/30))+" meses"):"defina em config","var(--accent-2)")}
+    ${kpi("Previsão de término",sim.finished?sim.months.length+(" mês"+(sim.months.length>1?"es":"")) :"ajuste a economia","",sim.finished?("conclui em "+monthLabelFull(sim.doneMonth)):"economize mais/mês","var(--accent)")}
+  </div>
+
+  <div class="grid" style="grid-template-columns:1fr 1.4fr;align-items:start;margin-top:22px">
+    <div class="card">
+      <div class="section-title" style="margin:0 0 14px">Progresso geral</div>
+      <div class="donut-wrap">
+        ${donut(m.pct,160,"concluído")}
+        <div class="legend">
+          <div><span class="sw" style="background:linear-gradient(135deg,var(--accent),var(--accent-2))"></span> ${m.comprados.length} comprados · ${money0(m.gasto)}</div>
+          <div><span class="sw" style="background:var(--surface-2)"></span> ${m.pendentes.length} pendentes · ${money0(m.pendenteVal)}</div>
+          <div><span class="sw" style="background:var(--accent-2)"></span> Financeiro: ${m.pctVal}% do orçamento</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title" style="margin:0 0 14px">Gasto previsto por categoria</div>
+      ${catData.length?hbars(catData):'<div class="muted">Sem valores ainda.</div>'}
+    </div>
+  </div>
+
+  ${alerts.length?`<div class="section-title">⏰ Alertas de prazo</div>
+    <div class="grid" style="gap:10px">${alerts.slice(0,3).map(a=>`<div class="alert ${a.cls}">${a.txt}</div>`).join("")}</div>`:""}
+
+  <div class="section-title">Próximos passos sugeridos</div>
+  <div class="card" style="padding:8px">
+    ${next.length?next.map((i,ix)=>{const pm=sim.predicted[i.id];return `
+      <div class="row between" style="padding:11px 12px;${ix?'border-top:1px solid var(--line)':''}">
+        <div class="row" style="gap:12px;min-width:0">
+          <div style="width:26px;height:26px;border-radius:8px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:700;font-size:13px;flex-shrink:0">${ix+1}</div>
+          <div style="min-width:0">
+            <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(i.descricao)}</div>
+            <div class="tag-cat">${esc(i.categoria)} · <span class="chip ${i.prioridade}" style="padding:1px 7px">${PRI[i.prioridade].l}</span></div>
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-weight:700;color:var(--accent)">${money0(i.valorEstimado)}</div>
+          ${pm!=null?`<div class="tag-cat">${pm===0?"este mês":"em "+monthLabel(pm)}</div>`:""}
+        </div>
+      </div>`;}).join(""):'<div class="empty"><div class="big">🎉</div>Tudo comprado! Parabéns.</div>'}
+  </div>`;
+}
+function kpi(lab,val,_,hint,color){
+  return `<div class="kpi"><div class="lab"><span class="dot" style="background:${color}"></span>${lab}</div>
+    <div class="val">${val}</div><div class="hint">${hint||""}</div></div>`;
+}
+function greeting(){const h=new Date().getHours();const n=(S.config.nome||"").split(" ")[0];
+  const g=h<12?"Bom dia":h<18?"Boa tarde":"Boa noite";return `${g}${n?", "+n:""} — vamos organizar a formatura ✨`;}
+function deadlineAlerts(){
+  const out=[];
+  S.items.filter(i=>i.status!=="comprado"&&i.dataPrevista).forEach(i=>{
+    const d=daysUntil(i.dataPrevista);
+    if(d==null)return;
+    if(d<0)out.push({cls:"bad",txt:`<b>${esc(i.descricao)}</b> está atrasado (prazo ${fmtDate(i.dataPrevista)}).`,d});
+    else if(d<=30)out.push({cls:"warn",txt:`<b>${esc(i.descricao)}</b> vence em ${d} dia(s) — ${fmtDate(i.dataPrevista)}.`,d});
+  });
+  return out.sort((a,b)=>a.d-b.d);
+}
+
+/* ===================================================================
+   2 · FINANCEIRO
+   =================================================================== */
+function viewFin(v,act,m){
+  document.getElementById("pageSub").textContent="Planeje suas compras mês a mês conforme o quanto economiza.";
+  const saveM=ui.simSave??S.config.economiaMensal??0;
+  const startB=ui.simStart??S.config.saldoAtual??0;
+  const sim=simulate(saveM,startB);
+  const pend=purchaseQueue();
+  const buckets={curto:[],medio:[],longo:[]};
+  pend.forEach(i=>{const pm=sim.predicted[i.id];if(pm==null)return;
+    (pm<=2?buckets.curto:pm<=6?buckets.medio:buckets.longo).push({i,pm});});
+
+  v.innerHTML=`
+  <div class="card" style="margin-bottom:18px">
+    <div class="section-title" style="margin:0 0 14px">Simulador de economia</div>
+    <div class="form-row">
+      <div class="field"><label>💰 Economizo por mês</label>
+        <input class="input" type="number" id="simSave" value="${saveM}" min="0" step="50"></div>
+      <div class="field"><label>🏦 Saldo disponível hoje</label>
+        <input class="input" type="number" id="simStart" value="${startB}" min="0" step="50"></div>
+    </div>
+    <input type="range" id="simRange" min="0" max="2000" step="50" value="${Math.min(2000,saveM)}" style="width:100%;accent-color:var(--accent)">
+    <div class="row wrap" style="gap:8px;margin-top:12px">
+      ${[100,200,300,500,800].map(x=>`<button class="btn sm" onclick="UI.setSim(${x})">${money0(x)}/mês</button>`).join("")}
+      <button class="btn sm ghost" onclick="UI.applySim()">✓ Salvar no perfil</button>
+    </div>
+  </div>
+
+  <div class="grid kpis" style="margin-bottom:6px">
+    ${kpi("A economizar (pendente)",money0(m.pendenteVal),"",pend.length+" itens com preço","var(--warn)")}
+    ${kpi("Economia mensal",money0(saveM),"","ritmo atual","var(--ok)")}
+    ${kpi("Meses p/ concluir",sim.finished?sim.months.length:"∞","",sim.finished?("até "+monthLabelFull(sim.doneMonth)):"aumente a economia","var(--accent)")}
+    ${kpi("1ª compra possível",sim.months.length&&sim.months[0].buys.length?sim.months[0].buys.length+" item(ns)":"—","","já no mês atual","var(--info)")}
+  </div>
+
+  <div class="grid" style="grid-template-columns:1fr 1fr 1fr;margin-top:20px">
+    ${goalCol("⚡ Curto prazo","até 2 meses",buckets.curto,sim)}
+    ${goalCol("📆 Médio prazo","3 a 6 meses",buckets.medio,sim)}
+    ${goalCol("🌱 Longo prazo","6+ meses",buckets.longo,sim)}
+  </div>
+
+  <div class="section-title">Cronograma automático de compras</div>
+  ${sim.months.length?`<div class="tablewrap"><table>
+    <thead><tr><th>Mês</th><th>Saldo inicial</th><th>+ Economia</th><th>Compras</th><th>Itens</th><th>Saldo final</th></tr></thead>
+    <tbody>${sim.months.map(mo=>`<tr>
+      <td><b>${mo.label}</b></td>
+      <td class="muted">${money0(mo.before)}</td>
+      <td style="color:var(--ok)">+${money0(mo.added)}</td>
+      <td>${mo.buys.length?money0(mo.buys.reduce((s,i)=>s+Number(i.valorEstimado),0)):"<span class='muted'>—</span>"}</td>
+      <td style="font-size:13px">${mo.buys.length?mo.buys.map(i=>esc(i.descricao)).join(", "):"<span class='muted'>juntando…</span>"}</td>
+      <td><b>${money0(mo.after)}</b></td>
+    </tr>`).join("")}</tbody></table></div>
+    ${!sim.finished?`<div class="alert warn" style="margin-top:12px">Com ${money0(saveM)}/mês não foi possível concluir tudo em ${sim.months.length} meses. Experimente aumentar a economia mensal acima.</div>`:
+      `<div class="alert ok" style="margin-top:12px">🎯 Com ${money0(saveM)}/mês, você conclui todas as compras em <b>${monthLabelFull(sim.doneMonth)}</b>.</div>`}`
+    :`<div class="empty"><div class="big">💸</div>Defina uma economia mensal para gerar o cronograma.</div>`}`;
+
+  const sv=document.getElementById("simSave"),st=document.getElementById("simStart"),rg=document.getElementById("simRange");
+  sv.oninput=()=>{ui.simSave=Number(sv.value)||0;rg.value=Math.min(2000,ui.simSave);render();document.getElementById("simSave").focus();};
+  st.oninput=()=>{ui.simStart=Number(st.value)||0;render();document.getElementById("simStart").focus();};
+  rg.oninput=()=>{ui.simSave=Number(rg.value);render();};
+}
+function goalCol(t,sub,arr,sim){
+  return `<div class="card">
+   <div style="font-weight:700;letter-spacing:-.2px">${t}</div>
+   <div class="tag-cat" style="margin-bottom:12px">${sub} · ${arr.length} item(ns)</div>
+   ${arr.length?arr.slice(0,8).map(({i,pm})=>`<div class="row between" style="padding:8px 0;border-top:1px solid var(--line)">
+      <div style="min-width:0"><div style="font-size:13.5px;font-weight:550;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(i.descricao)}</div>
+      <div class="tag-cat">${pm===0?"este mês":monthLabel(pm)}</div></div>
+      <b style="color:var(--accent);flex-shrink:0;font-size:13.5px">${money0(i.valorEstimado)}</b></div>`).join("")
+     +(arr.length>8?`<div class="tag-cat" style="margin-top:8px">+${arr.length-8} mais…</div>`:"")
+   :'<div class="muted" style="font-size:13px;padding:6px 0">Nada aqui ainda.</div>'}
+  </div>`;
+}
+
+/* ===================================================================
+   3 · ITENS & CHECKLIST
+   =================================================================== */
+function viewItems(v,act,m){
+  document.getElementById("pageSub").textContent=`${S.items.length} itens · ${m.comprados.length} comprados`;
+  act.innerHTML=`<button class="btn primary sm" onclick="UI.editItem()">${IC.plus} <span class="hide-sm">Novo item</span></button>`;
+  const f=ui.itemFilter;
+  v.innerHTML=`
+  <div class="toolbar">
+    <div class="search">${IC.search}<input id="iq" placeholder="Buscar item…" value="${esc(f.q)}"></div>
+    <select class="input" id="ifc" style="width:auto"><option value="">Categoria</option>${S.categorias.map(c=>`<option ${f.cat===c?"selected":""}>${esc(c)}</option>`).join("")}</select>
+    <select class="input" id="ifp" style="width:auto"><option value="">Prioridade</option>${Object.keys(PRI).map(p=>`<option value="${p}" ${f.pri===p?"selected":""}>${PRI[p].l}</option>`).join("")}</select>
+    <select class="input" id="ifs" style="width:auto"><option value="">Status</option><option value="pendente" ${f.st==="pendente"?"selected":""}>Pendente</option><option value="comprado" ${f.st==="comprado"?"selected":""}>Comprado</option></select>
+    <select class="input" id="isort" style="width:auto"><option value="prioridade" ${ui.itemSort==="prioridade"?"selected":""}>Ordenar: Prioridade</option><option value="valor" ${ui.itemSort==="valor"?"selected":""}>Valor</option><option value="categoria" ${ui.itemSort==="categoria"?"selected":""}>Categoria</option><option value="prazo" ${ui.itemSort==="prazo"?"selected":""}>Prazo</option></select>
+    <div class="seg"><button class="${ui.itemView==='lista'?'on':''}" onclick="UI.itemView('lista')">Lista</button><button class="${ui.itemView==='checklist'?'on':''}" onclick="UI.itemView('checklist')">Checklist</button></div>
+  </div>
+  <div id="itemArea"></div>`;
+  document.getElementById("iq").oninput=e=>{f.q=e.target.value;renderItemArea();};
+  document.getElementById("ifc").onchange=e=>{f.cat=e.target.value;renderItemArea();};
+  document.getElementById("ifp").onchange=e=>{f.pri=e.target.value;renderItemArea();};
+  document.getElementById("ifs").onchange=e=>{f.st=e.target.value;renderItemArea();};
+  document.getElementById("isort").onchange=e=>{ui.itemSort=e.target.value;renderItemArea();};
+  renderItemArea();
+}
+function filteredItems(){
+  const f=ui.itemFilter;let arr=S.items.filter(i=>{
+    if(f.cat&&i.categoria!==f.cat)return false;
+    if(f.pri&&i.prioridade!==f.pri)return false;
+    if(f.st&&(i.status||"pendente")!==f.st)return false;
+    if(f.q){const q=f.q.toLowerCase();if(!((i.descricao||"")+(i.categoria||"")+(i.observacoes||"")).toLowerCase().includes(q))return false;}
+    return true;});
+  const s=ui.itemSort;
+  arr.sort((a,b)=>{
+    if(s==="valor")return itemVal(b)-itemVal(a);
+    if(s==="categoria")return (a.categoria||"").localeCompare(b.categoria||"")|| (PRI[a.prioridade].w-PRI[b.prioridade].w);
+    if(s==="prazo"){const da=daysUntil(a.dataPrevista),db=daysUntil(b.dataPrevista);return (da==null?1e9:da)-(db==null?1e9:db);}
+    return PRI[a.prioridade].w-PRI[b.prioridade].w || itemVal(b)-itemVal(a);
+  });
+  return arr;
+}
+function renderItemArea(){
+  const area=document.getElementById("itemArea");if(!area)return;
+  const arr=filteredItems();const sim=simulate();
+  if(!arr.length){area.innerHTML='<div class="empty"><div class="big">🔍</div>Nenhum item encontrado.</div>';return;}
+  if(ui.itemView==="checklist"){
+    const cats={};arr.forEach(i=>{(cats[i.categoria]=cats[i.categoria]||[]).push(i);});
+    area.innerHTML=Object.entries(cats).map(([c,list])=>{
+      const done=list.filter(i=>i.status==="comprado").length;
+      return `<div class="card" style="margin-bottom:14px">
+        <div class="row between" style="margin-bottom:6px"><div style="font-weight:700">${esc(c)}</div>
+          <div class="tag-cat">${done}/${list.length} · ${money0(list.reduce((s,i)=>s+itemVal(i),0))}</div></div>
+        <div class="bar" style="margin-bottom:12px"><span style="width:${list.length?done/list.length*100:0}%"></span></div>
+        ${list.map(i=>itemRow(i,sim,true)).join("")}
+      </div>`;}).join("");
+  }else{
+    area.innerHTML=`<div class="card" style="padding:6px">${arr.map(i=>itemRow(i,sim,false)).join("")}</div>`;
+  }
+}
+function itemRow(i,sim,inCard){
+  const pm=sim.predicted[i.id];const d=daysUntil(i.dataPrevista);
+  const bought=i.status==="comprado";
+  return `<div class="row between" style="padding:11px 10px;border-top:1px solid var(--line);gap:10px" >
+    <div class="row" style="gap:11px;min-width:0;flex:1">
+      <button onclick="UI.toggleBuy('${i.id}')" title="Marcar comprado" style="width:22px;height:22px;border-radius:7px;border:2px solid ${bought?'var(--ok)':'var(--line-2)'};background:${bought?'var(--ok)':'transparent'};color:#fff;display:grid;place-items:center;flex-shrink:0">${bought?'✓':''}</button>
+      <div style="min-width:0">
+        <div style="font-weight:600;${bought?'text-decoration:line-through;color:var(--text-3)':''};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(i.descricao)} ${i.sugerido?'<span class="chip sug">sugerido</span>':''}</div>
+        <div class="row wrap" style="gap:6px;margin-top:3px">
+          <span class="tag-cat">${esc(i.categoria)}</span>
+          <span class="chip ${i.prioridade}" style="padding:1px 7px">${PRI[i.prioridade].l}</span>
+          ${i.unidade?`<span class="tag-cat">· ${esc(i.unidade)}</span>`:""}
+          ${i.dataPrevista?`<span class="chip ${d!=null&&d<0?'alta':d!=null&&d<=30?'media':''}" style="padding:1px 7px">📅 ${fmtDate(i.dataPrevista)}</span>`:""}
+          ${i.opcoes&&i.opcoes.length?`<span class="tag-cat">· ${i.opcoes.length} opções</span>`:""}
+          ${i.link?`<a href="${esc(i.link)}" target="_blank" rel="noopener" class="tag-cat" style="color:var(--accent)">link ${IC.ext}</a>`:""}
+        </div>
+      </div>
+    </div>
+    <div style="text-align:right;flex-shrink:0">
+      <div style="font-weight:700;color:${bought?'var(--ok)':'var(--accent)'}">${money0(itemVal(i))}</div>
+      ${!bought&&pm!=null?`<div class="tag-cat">${pm===0?'este mês':monthLabel(pm)}</div>`:bought&&i.dataCompra?`<div class="tag-cat">✓ ${fmtDate(i.dataCompra)}</div>`:""}
+    </div>
+    <div class="row" style="flex-shrink:0">
+      <button class="icon-btn" style="width:32px;height:32px" onclick="UI.editItem('${i.id}')" title="Editar">✏️</button>
+    </div>
+  </div>`;
+}
+
+/* ===================================================================
+   4 · CRONOGRAMA / TIMELINE
+   =================================================================== */
+function viewTimeline(v,act,m){
+  document.getElementById("pageSub").textContent="Linha do tempo das etapas, prazos e compras previstas.";
+  const sim=simulate();
+  const ev=[];
+  // graduation
+  if(S.config.dataFormatura)ev.push({date:S.config.dataFormatura,type:"grad",title:"🎓 Formatura",
+    desc:`${esc(S.config.curso||"")}${S.config.instituicao?" · "+esc(S.config.instituicao):""}`});
+  // item deadlines
+  S.items.filter(i=>i.dataPrevista).forEach(i=>{const d=daysUntil(i.dataPrevista);
+    ev.push({date:i.dataPrevista,type:i.status==="comprado"?"done":(d!=null&&d<=30?"warn":"plan"),
+      title:(i.status==="comprado"?"✅ ":"📌 ")+esc(i.descricao),
+      desc:`${esc(i.categoria)} · ${money0(itemVal(i))}${i.status!=="comprado"&&d!=null?(d<0?" · ATRASADO":" · faltam "+d+" dias"):""}`});});
+  // bought items with buy date
+  S.items.filter(i=>i.status==="comprado"&&i.dataCompra&&!i.dataPrevista).forEach(i=>{
+    ev.push({date:i.dataCompra,type:"done",title:"✅ "+esc(i.descricao),desc:esc(i.categoria)+" · comprado"});});
+  ev.sort((a,b)=>new Date(a.date)-new Date(b.date));
+
+  // predicted purchase months (grouped)
+  const planMonths=sim.months.filter(mo=>mo.buys.length);
+
+  v.innerHTML=`
+  <div class="grid" style="grid-template-columns:1.1fr 1fr;align-items:start">
+    <div class="card">
+      <div class="section-title" style="margin:0 0 16px">📅 Datas marcadas</div>
+      ${ev.length?`<div class="tl">${ev.map(e=>`
+        <div class="tl-item ${e.type}">
+          <div class="tl-dot">${e.type==="done"?"✓":e.type==="grad"?"🎓":e.type==="warn"?"!":""}</div>
+          <div class="tl-date">${fmtDate(e.date)}</div>
+          <div class="tl-card"><div style="font-weight:600">${e.title}</div><div class="tag-cat" style="margin-top:2px">${e.desc}</div></div>
+        </div>`).join("")}</div>`
+        :`<div class="empty"><div class="big">🗓️</div>Adicione datas previstas aos itens para vê-las aqui.</div>`}
+    </div>
+    <div class="card">
+      <div class="section-title" style="margin:0 0 16px">🛒 Compras previstas (plano financeiro)</div>
+      ${planMonths.length?`<div class="tl">${planMonths.map(mo=>`
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-date">${mo.labelFull} · ${money0(mo.buys.reduce((s,i)=>s+Number(i.valorEstimado),0))}</div>
+          <div class="tl-card">${mo.buys.map(i=>`<div class="row between" style="font-size:13.5px;padding:2px 0"><span>${esc(i.descricao)}</span><b style="color:var(--accent)">${money0(i.valorEstimado)}</b></div>`).join("")}</div>
+        </div>`).join("")}</div>`
+        :`<div class="empty"><div class="big">💡</div>Defina economia mensal no Financeiro.</div>`}
+    </div>
+  </div>`;
+}
+
+/* ===================================================================
+   5 · ESTRATÉGIA
+   =================================================================== */
+function viewStrategy(v,act,m){
+  document.getElementById("pageSub").textContent="Recomendações inteligentes do que comprar primeiro.";
+  const sim=simulate();const q=purchaseQueue();
+  const top3=q.slice(0,3);
+  const wait=q.filter(i=>i.prioridade==="baixa").slice(0,8);
+  const alerts=deadlineAlerts();
+  v.innerHTML=`
+  <div class="section-title" style="margin-top:0">🎯 Os 3 próximos a comprar</div>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr))">
+    ${top3.length?top3.map((i,ix)=>{const pm=sim.predicted[i.id];const imp=m.totalPrevisto?Math.round(itemVal(i)/m.totalPrevisto*100):0;
+      return `<div class="card">
+       <div class="row between"><div style="width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;display:grid;place-items:center;font-weight:750">${ix+1}</div>
+         <span class="chip ${i.prioridade}">${PRI[i.prioridade].l}</span></div>
+       <div style="font-weight:700;margin-top:12px;letter-spacing:-.2px">${esc(i.descricao)}</div>
+       <div class="tag-cat" style="margin:3px 0 12px">${esc(i.categoria)}</div>
+       <div class="row between" style="font-size:13px"><span class="muted">Valor</span><b style="color:var(--accent)">${money0(i.valorEstimado)}</b></div>
+       <div class="row between" style="font-size:13px;margin-top:5px"><span class="muted">Previsão</span><b>${pm==null?"—":pm===0?"este mês":monthLabel(pm)}</b></div>
+       <div class="row between" style="font-size:13px;margin:5px 0 6px"><span class="muted">Impacto no orçamento</span><b>${imp}%</b></div>
+       <div class="bar"><span style="width:${imp}%"></span></div>
+       ${i.dataPrevista?`<div class="alert ${daysUntil(i.dataPrevista)<30?'warn':'info'}" style="margin-top:12px;padding:8px 10px;font-size:12.5px">Prazo: ${fmtDate(i.dataPrevista)}</div>`:""}
+      </div>`;}).join(""):'<div class="card muted">Nada pendente com valor. 🎉</div>'}
+  </div>
+
+  ${alerts.length?`<div class="section-title">⏰ Alertas de prazo</div>
+   <div class="grid" style="gap:10px">${alerts.map(a=>`<div class="alert ${a.cls}">${a.txt}</div>`).join("")}</div>`:""}
+
+  <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:22px;align-items:start">
+    <div class="card">
+      <div class="section-title" style="margin:0 0 12px">🐢 Podem esperar</div>
+      ${wait.length?wait.map(i=>`<div class="row between" style="padding:9px 0;border-top:1px solid var(--line)">
+        <div style="min-width:0"><div style="font-weight:550;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(i.descricao)}</div><div class="tag-cat">${esc(i.categoria)}</div></div>
+        <b style="flex-shrink:0;font-size:13.5px">${money0(i.valorEstimado)}</b></div>`).join(""):'<div class="muted" style="font-size:13px">Nada de baixa prioridade.</div>'}
+    </div>
+    <div class="card">
+      <div class="section-title" style="margin:0 0 12px">📊 Maior impacto no orçamento</div>
+      ${hbars(q.slice().sort((a,b)=>itemVal(b)-itemVal(a)).slice(0,6).map(i=>({label:i.descricao.slice(0,26),val:itemVal(i),fmt:money0(itemVal(i))})))}
+    </div>
+  </div>
+
+  <div class="section-title">💡 Recomendações automáticas</div>
+  <div class="grid" style="gap:10px">
+    ${recommendations(m,sim,q).map(r=>`<div class="alert ${r.cls}">${r.txt}</div>`).join("")}
+  </div>`;
+}
+function recommendations(m,sim,q){
+  const r=[];
+  if(q.length){const f=q[0];r.push({cls:"info",txt:`Comece por <b>${esc(f.descricao)}</b> (${PRI[f.prioridade].l.toLowerCase()} prioridade, ${money0(f.valorEstimado)}).`});}
+  const big=q.slice().sort((a,b)=>itemVal(b)-itemVal(a))[0];
+  if(big&&m.totalPrevisto&&itemVal(big)/m.totalPrevisto>0.15)r.push({cls:"warn",txt:`<b>${esc(big.descricao)}</b> representa ${Math.round(itemVal(big)/m.totalPrevisto*100)}% do orçamento — planeje com antecedência ou compare opções.`});
+  if(!sim.finished&&S.config.dataFormatura){const dg=daysUntil(S.config.dataFormatura);
+    if(dg!=null&&dg>0){const need=Math.ceil(m.pendenteVal/Math.max(1,dg/30));r.push({cls:"warn",txt:`Para concluir antes da formatura, economize ~<b>${money0(need)}/mês</b> (faltam ~${Math.round(dg/30)} meses).`});}}
+  else if(sim.finished)r.push({cls:"ok",txt:`No ritmo atual você termina tudo em <b>${monthLabelFull(sim.doneMonth)}</b>. 👏`});
+  const noPrice=S.items.filter(i=>i.status!=="comprado"&&!(Number(i.valorEstimado)>0)).length;
+  if(noPrice)r.push({cls:"info",txt:`${noPrice} item(ns) ainda sem valor — preencha para entrarem no cronograma financeiro.`});
+  const multi=S.items.filter(i=>i.opcoes&&i.opcoes.length>3).length;
+  if(multi)r.push({cls:"info",txt:`${multi} itens têm várias opções pesquisadas — abra e compare preços para economizar.`});
+  return r;
+}
+
+/* ===================================================================
+   6 · CONVIDADOS
+   =================================================================== */
+function guestMetrics(){
+  const g=S.guests;const conf=g.filter(x=>x.status==="confirmado");
+  const rec=g.filter(x=>x.status==="recusado");const wait=g.filter(x=>x.status!=="confirmado"&&x.status!=="recusado");
+  const acomp=conf.reduce((s,x)=>s+Number(x.acompanhantes||0),0);
+  const totalPessoas=conf.length+acomp;
+  const limite=Number(S.config.limiteConvidados||0);
+  const custo=Number(S.config.custoPorConvidado||0)*totalPessoas;
+  return {conf,rec,wait,acomp,totalPessoas,limite,custo,
+    ocup:limite?Math.round(totalPessoas/limite*100):0,vagas:limite?Math.max(0,limite-totalPessoas):null};
+}
+function viewGuests(v,act,m){
+  const gm=guestMetrics();
+  document.getElementById("pageSub").textContent=`${S.guests.length} convidados · ${gm.conf.length} confirmados`;
+  act.innerHTML=`<button class="btn primary sm" onclick="UI.editGuest()">${IC.plus} <span class="hide-sm">Novo convidado</span></button>`;
+  const f=ui.guestFilter;
+  const cidades=[...new Set(S.guests.map(g=>g.cidade).filter(Boolean))];
+  v.innerHTML=`
+  <div class="grid kpis" style="margin-bottom:8px">
+    ${kpi("Convidados",S.guests.length,"","cadastrados","var(--accent)")}
+    ${kpi("Confirmados",gm.conf.length,"",gm.acomp+" acompanhantes","var(--ok)")}
+    ${kpi("Recusaram",gm.rec.length,"","","var(--bad)")}
+    ${kpi("Sem resposta",gm.wait.length,"","aguardando","var(--warn)")}
+    ${kpi("Total de pessoas",gm.totalPessoas,"",gm.limite?("de "+gm.limite+" vagas"):"defina limite","var(--info)")}
+    ${kpi("Custo confirmados",money0(gm.custo),"",money0(S.config.custoPorConvidado)+"/pessoa","var(--accent-2)")}
+  </div>
+  ${gm.limite?`<div class="card" style="margin-bottom:16px">
+    <div class="row between" style="margin-bottom:8px"><b>Ocupação dos convites</b><span>${gm.totalPessoas}/${gm.limite} · ${gm.vagas} vaga(s) livre(s)</span></div>
+    <div class="bar"><span style="width:${Math.min(100,gm.ocup)}%;background:${gm.ocup>=100?'var(--bad)':gm.ocup>=85?'linear-gradient(90deg,var(--warn),var(--bad))':'linear-gradient(90deg,var(--accent),var(--accent-2))'}"></span></div>
+    ${gm.ocup>=85?`<div class="alert ${gm.ocup>=100?'bad':'warn'}" style="margin-top:12px">${gm.ocup>=100?"⚠️ Limite atingido/excedido!":"⚠️ Atenção: restam apenas "+gm.vagas+" vaga(s)."}</div>`:""}
+  </div>`:""}
+
+  <div class="toolbar">
+    <div class="search">${IC.search}<input id="gq" placeholder="Buscar convidado…" value="${esc(f.q)}"></div>
+    <select class="input" id="gfg" style="width:auto"><option value="">Grupo</option>${S.gruposConvidados.map(c=>`<option ${f.grupo===c?"selected":""}>${esc(c)}</option>`).join("")}</select>
+    <select class="input" id="gfs" style="width:auto"><option value="">Status</option><option value="confirmado" ${f.st==="confirmado"?"selected":""}>Confirmado</option><option value="recusado" ${f.st==="recusado"?"selected":""}>Recusado</option><option value="aguardando" ${f.st==="aguardando"?"selected":""}>Aguardando</option></select>
+    ${cidades.length?`<select class="input" id="gfc" style="width:auto"><option value="">Cidade</option>${cidades.map(c=>`<option ${f.cidade===c?"selected":""}>${esc(c)}</option>`).join("")}</select>`:""}
+    <div class="seg"><button class="${ui.guestView==='tabela'?'on':''}" onclick="UI.guestView('tabela')">Tabela</button><button class="${ui.guestView==='cartoes'?'on':''}" onclick="UI.guestView('cartoes')">Cartões</button></div>
+  </div>
+  <div id="guestArea"></div>`;
+  const bind=(id,key)=>{const el=document.getElementById(id);if(el)el[el.tagName==="INPUT"?"oninput":"onchange"]=e=>{f[key]=e.target.value;renderGuestArea();};};
+  bind("gq","q");bind("gfg","grupo");bind("gfs","st");bind("gfc","cidade");
+  renderGuestArea();
+}
+function filteredGuests(){
+  const f=ui.guestFilter;
+  return S.guests.filter(g=>{
+    if(f.grupo&&g.grupo!==f.grupo)return false;
+    if(f.st&&(g.status||"aguardando")!==f.st)return false;
+    if(f.cidade&&g.cidade!==f.cidade)return false;
+    if(f.q){const q=f.q.toLowerCase();if(!((g.nome||"")+(g.apelido||"")+(g.grupo||"")+(g.obs||"")).toLowerCase().includes(q))return false;}
+    return true;
+  }).sort((a,b)=>(a.nome||"").localeCompare(b.nome||""));
+}
+const STL={confirmado:"Confirmado",recusado:"Recusou",aguardando:"Aguardando"};
+function renderGuestArea(){
+  const area=document.getElementById("guestArea");if(!area)return;
+  const arr=filteredGuests();
+  if(!arr.length){area.innerHTML='<div class="empty"><div class="big">🔍</div>Nenhum convidado encontrado.</div>';return;}
+  if(ui.guestView==="cartoes"){
+    area.innerHTML=`<div class="card-list">${arr.map(g=>`
+      <div class="gcard ${g.status!=='confirmado'&&g.status!=='recusado'?'norsvp':''} ${g.vip?'vip':''}">
+        <div class="row between"><div style="font-weight:680;letter-spacing:-.2px">${esc(g.nome)} ${g.vip?'<span class="chip vip">VIP</span>':''}</div></div>
+        ${g.apelido?`<div class="tag-cat">"${esc(g.apelido)}"</div>`:""}
+        <div class="pill-row" style="margin:9px 0">
+          <span class="chip ${g.status||'aguardando'}">${STL[g.status||'aguardando']}</span>
+          <span class="chip">${esc(g.grupo||"—")}</span>
+          ${Number(g.acompanhantes)>0?`<span class="chip">+${g.acompanhantes} acomp.</span>`:""}
+        </div>
+        <div class="tag-cat" style="line-height:1.7">
+          ${g.telefone?`📞 ${esc(g.telefone)}<br>`:""}
+          ${g.cidade?`📍 ${esc(g.cidade)}<br>`:""}
+          ${g.tamanhoChinelo?`👡 Chinelo: ${esc(g.tamanhoChinelo)}<br>`:""}
+          ${g.conviteEnviado?"✉️ enviado ":""}${g.conviteEntregue?"📬 entregue":""}
+          ${g.obs?`<br><span style="color:var(--text-2)">${esc(g.obs)}</span>`:""}
+        </div>
+        <div class="row" style="margin-top:12px;gap:8px"><button class="btn sm" style="flex:1" onclick="UI.editGuest('${g.id}')">Editar</button>
+          ${g.status!=="confirmado"?`<button class="btn sm primary" onclick="UI.quickRsvp('${g.id}','confirmado')">Confirmar</button>`:`<button class="btn sm" onclick="UI.quickRsvp('${g.id}','aguardando')">Reabrir</button>`}</div>
+      </div>`).join("")}</div>`;
+  }else{
+    area.innerHTML=`<div class="tablewrap"><table>
+     <thead><tr><th>Nome</th><th>Grupo</th><th class="hide-sm">Telefone</th><th class="hide-sm">Cidade</th><th>Acomp.</th><th>Convite</th><th>Status</th><th></th></tr></thead>
+     <tbody>${arr.map(g=>`<tr style="${g.status!=='confirmado'&&g.status!=='recusado'?'background:linear-gradient(90deg,var(--warn-soft),transparent)':''}">
+       <td><b>${esc(g.nome)}</b> ${g.vip?'<span class="chip vip" style="padding:1px 6px">VIP</span>':''}${g.apelido?`<div class="tag-cat">"${esc(g.apelido)}"</div>`:""}${g.tamanhoChinelo?`<div class="tag-cat">👡 ${esc(g.tamanhoChinelo)}</div>`:""}</td>
+       <td>${esc(g.grupo||"—")}</td>
+       <td class="hide-sm">${esc(g.telefone||"")||'<span class="muted">—</span>'}</td>
+       <td class="hide-sm">${esc(g.cidade||"")||'<span class="muted">—</span>'}</td>
+       <td>${Number(g.acompanhantes)>0?"+"+g.acompanhantes:'<span class="muted">0</span>'}</td>
+       <td>${g.conviteEntregue?'<span class="chip comprado" style="padding:1px 7px">entregue</span>':g.conviteEnviado?'<span class="chip" style="padding:1px 7px">enviado</span>':'<span class="muted">—</span>'}</td>
+       <td><span class="chip ${g.status||'aguardando'}">${STL[g.status||'aguardando']}</span></td>
+       <td><button class="icon-btn" style="width:32px;height:32px" onclick="UI.editGuest('${g.id}')">✏️</button></td>
+     </tr>`).join("")}</tbody></table></div>`;
+  }
+}
+
+/* ===================================================================
+   7 · RELATÓRIOS / EXPORT
+   =================================================================== */
+function viewReports(v,act,m){
+  document.getElementById("pageSub").textContent="Exporte, faça backup e gere relatórios para impressão/PDF.";
+  v.innerHTML=`
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
+    <div class="card">
+      <div style="font-size:30px">📄</div>
+      <div style="font-weight:700;margin:8px 0 4px">Relatório PDF</div>
+      <p class="muted" style="font-size:13.5px;margin-bottom:14px">Gera um relatório com layout, dashboard, tabelas e cronograma. Use “Salvar como PDF” na janela de impressão.</p>
+      <div class="grid" style="gap:8px">
+        <button class="btn primary" onclick="Report.gen('completo')">Relatório completo</button>
+        <button class="btn" onclick="Report.gen('financeiro')">Relatório financeiro</button>
+        <button class="btn" onclick="Report.gen('convidados')">Relatório de convidados</button>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:30px">📊</div>
+      <div style="font-weight:700;margin:8px 0 4px">Exportar Excel</div>
+      <p class="muted" style="font-size:13.5px;margin-bottom:14px">Baixe seus dados em planilha (.xlsx). Escolha o que exportar.</p>
+      <div class="grid" style="gap:8px">
+        <button class="btn primary" onclick="Exp.excel('tudo')">Tudo (itens + convidados)</button>
+        <button class="btn" onclick="Exp.excel('itens')">Somente itens</button>
+        <button class="btn" onclick="Exp.excel('convidados')">Somente convidados</button>
+        <select class="input" id="expCat" onchange="if(this.value)Exp.excel('cat',this.value)"><option value="">Exportar categoria específica…</option>${S.categorias.map(c=>`<option>${esc(c)}</option>`).join("")}</select>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:30px">💾</div>
+      <div style="font-weight:700;margin:8px 0 4px">Backup & Restauração</div>
+      <p class="muted" style="font-size:13.5px;margin-bottom:14px">Salve um arquivo com TODOS os dados e importe quando quiser, sem perdas.</p>
+      <div class="grid" style="gap:8px">
+        <button class="btn primary" onclick="Exp.backup()">⬇️ Baixar backup (.json)</button>
+        <button class="btn" onclick="document.getElementById('impFile').click()">⬆️ Restaurar backup</button>
+        <input type="file" id="impFile" accept=".json" style="display:none" onchange="Exp.restore(this.files[0])">
+      </div>
+    </div>
+  </div>
+  <div class="note" style="margin-top:18px">💡 Dica: para publicar no GitHub Pages, faça upload deste arquivo <b>.html</b> no repositório. Seus dados ficam salvos apenas no seu navegador (privado).</div>`;
+}
+
+/* ===================================================================
+   8 · CONFIGURAÇÕES / PERFIL
+   =================================================================== */
+function viewConfig(v,act,m){
+  document.getElementById("pageSub").textContent="Personalize seus dados — tudo pela interface, sem editar código.";
+  const c=S.config;
+  v.innerHTML=`
+  <div class="card" style="margin-bottom:16px">
+    <div class="section-title" style="margin:0 0 14px">👤 Perfil do formando(a)</div>
+    <div class="form-row">
+      <div class="field"><label>Nome</label><input class="input" id="c_nome" value="${esc(c.nome)}"></div>
+      <div class="field"><label>Curso</label><input class="input" id="c_curso" value="${esc(c.curso)}"></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Instituição</label><input class="input" id="c_inst" value="${esc(c.instituicao)}"></div>
+      <div class="field"><label>Data da formatura</label><input class="input" type="date" id="c_data" value="${esc(c.dataFormatura)}"></div>
+    </div>
+    <div class="field"><label>Frase / lema (aparece no painel)</label><input class="input" id="c_frase" value="${esc(c.frase||"")}"></div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="section-title" style="margin:0 0 14px">💰 Finanças</div>
+    <div class="form-row">
+      <div class="field"><label>Economia por mês (${esc(cur())})</label><input class="input" type="number" id="c_eco" value="${c.economiaMensal||0}"></div>
+      <div class="field"><label>Saldo disponível hoje (${esc(cur())})</label><input class="input" type="number" id="c_saldo" value="${c.saldoAtual||0}"></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Meta financeira (${esc(cur())})</label><input class="input" type="number" id="c_meta" value="${c.metaFinanceira||0}">
+        <span class="tag-cat">Total previsto atual: ${money(m.totalPrevisto)} <button class="btn sm ghost" onclick="UI.setMetaTotal()">usar</button></span></div>
+      <div class="field"><label>Símbolo de moeda</label><input class="input" id="c_moeda" value="${esc(c.moeda)}"></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="section-title" style="margin:0 0 14px">🎉 Convidados</div>
+    <div class="form-row">
+      <div class="field"><label>Limite máximo de convidados</label><input class="input" type="number" id="c_lim" value="${c.limiteConvidados||0}"></div>
+      <div class="field"><label>Custo estimado por pessoa (${esc(cur())})</label><input class="input" type="number" id="c_cpp" value="${c.custoPorConvidado||0}"></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="section-title" style="margin:0 0 14px">🎨 Aparência</div>
+    <div class="field"><label>Cor de destaque</label>
+      <div class="pill-row" id="accentRow">${["#8E2C4E","#6D3B8E","#2C5F8E","#1F7A6B","#B5642B","#A23E48","#3A3A3A","#C8A951"].map(col=>`<div class="color-dot ${c.accent===col||(!c.accent&&col==='#8E2C4E')?'on':''}" style="background:${col}" onclick="UI.setAccent('${col}')"></div>`).join("")}</div>
+    </div>
+    <div class="row between" style="margin-top:6px"><label style="font-weight:600;color:var(--text-2)">Tema escuro</label>
+      <label class="switch"><input type="checkbox" id="c_dark" ${document.documentElement.dataset.theme==="dark"?"checked":""} onchange="UI.toggleTheme()"><span></span></label></div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="section-title" style="margin:0 0 14px">🏷️ Categorias de itens</div>
+    <div class="pill-row" id="catChips">${S.categorias.map(c2=>`<span class="chip" style="padding:5px 10px">${esc(c2)} <button onclick="UI.delCat('${esc(c2)}')" style="color:var(--bad);font-weight:700;margin-left:3px">×</button></span>`).join("")}</div>
+    <div class="row" style="margin-top:12px;gap:8px"><input class="input" id="newCat" placeholder="Nova categoria…" style="flex:1"><button class="btn" onclick="UI.addCat()">Adicionar</button></div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="section-title" style="margin:0 0 14px">👥 Grupos de convidados</div>
+    <div class="pill-row" id="grpChips">${S.gruposConvidados.map(g=>`<span class="chip" style="padding:5px 10px">${esc(g)} <button onclick="UI.delGrp('${esc(g)}')" style="color:var(--bad);font-weight:700;margin-left:3px">×</button></span>`).join("")}</div>
+    <div class="row" style="margin-top:12px;gap:8px"><input class="input" id="newGrp" placeholder="Novo grupo…" style="flex:1"><button class="btn" onclick="UI.addGrp()">Adicionar</button></div>
+  </div>
+
+  <div class="card" style="border-color:var(--bad-soft)">
+    <div class="section-title" style="margin:0 0 10px;color:var(--bad)">⚠️ Zona de risco</div>
+    <p class="muted" style="font-size:13.5px;margin-bottom:14px">Recomeçar do zero apaga todos os itens, convidados e configurações deste navegador. Faça um backup antes.</p>
+    <div class="row wrap" style="gap:10px">
+      <button class="btn" onclick="Exp.backup()">Fazer backup primeiro</button>
+      <button class="btn danger" onclick="UI.resetSeed()">Restaurar dados de exemplo</button>
+      <button class="btn danger" onclick="UI.resetAll()">Começar planejamento em branco</button>
+    </div>
+  </div>`;
+
+  const map={c_nome:"nome",c_curso:"curso",c_inst:"instituicao",c_data:"dataFormatura",c_frase:"frase",
+    c_eco:"economiaMensal",c_saldo:"saldoAtual",c_meta:"metaFinanceira",c_moeda:"moeda",c_lim:"limiteConvidados",c_cpp:"custoPorConvidado"};
+  Object.entries(map).forEach(([id,key])=>{const el=document.getElementById(id);if(!el)return;
+    el.onchange=()=>{const num=["economiaMensal","saldoAtual","metaFinanceira","limiteConvidados","custoPorConvidado"].includes(key);
+      S.config[key]=num?Number(el.value)||0:el.value;save();if(["nome","curso"].includes(key))render();toast("Salvo ✓");};});
+}
+
+/* ===================================================================
+   MODALS — item & guest editors
+   =================================================================== */
+function modal(html){
+  closeModal();
+  const o=document.createElement("div");o.className="overlay";o.id="ov";
+  o.innerHTML=`<div class="modal">${html}</div>`;
+  o.onclick=e=>{if(e.target===o)closeModal();};
+  document.body.appendChild(o);document.body.style.overflow="hidden";
+}
+function closeModal(){const o=document.getElementById("ov");if(o)o.remove();document.body.style.overflow="";}
+
+function editItem(id){
+  const it=id?S.items.find(x=>x.id===id):{categoria:S.categorias[0],descricao:"",prioridade:"media",valorEstimado:"",valorReal:"",status:"pendente",dataPrevista:"",dataCompra:"",unidade:"",link:"",observacoes:"",opcoes:[]};
+  const isNew=!id;
+  modal(`
+   <div class="modal-head"><h3>${isNew?"Novo item":"Editar item"}</h3><div class="spacer" style="flex:1"></div><button class="icon-btn" onclick="UI._closeModal()">✕</button></div>
+   <div class="modal-body">
+     <div class="field"><label>Descrição</label><input class="input" id="f_desc" value="${esc(it.descricao)}" placeholder="Ex.: Ecobag personalizada"></div>
+     <div class="form-row">
+       <div class="field"><label>Categoria</label><select class="input" id="f_cat">${S.categorias.map(c=>`<option ${it.categoria===c?"selected":""}>${esc(c)}</option>`).join("")}</select></div>
+       <div class="field"><label>Prioridade</label><select class="input" id="f_pri">${Object.keys(PRI).map(p=>`<option value="${p}" ${it.prioridade===p?"selected":""}>${PRI[p].l}</option>`).join("")}</select></div>
+     </div>
+     <div class="form-row">
+       <div class="field"><label>Valor estimado (${esc(cur())})</label><input class="input" type="number" id="f_est" value="${it.valorEstimado}"></div>
+       <div class="field"><label>Valor real pago (${esc(cur())})</label><input class="input" type="number" id="f_real" value="${it.valorReal==null?"":it.valorReal}"></div>
+     </div>
+     <div class="form-row">
+       <div class="field"><label>Status</label><select class="input" id="f_st"><option value="pendente" ${it.status!=="comprado"?"selected":""}>Pendente</option><option value="comprado" ${it.status==="comprado"?"selected":""}>Comprado</option></select></div>
+       <div class="field"><label>Unidades / quantidade</label><input class="input" id="f_unid" value="${esc(it.unidade||"")}" placeholder="Ex.: 30 unid"></div>
+     </div>
+     <div class="form-row">
+       <div class="field"><label>Data prevista</label><input class="input" type="date" id="f_prev" value="${esc(it.dataPrevista||"")}"></div>
+       <div class="field"><label>Data da compra</label><input class="input" type="date" id="f_comp" value="${esc(it.dataCompra||"")}"></div>
+     </div>
+     <div class="field"><label>Link</label><input class="input" id="f_link" value="${esc(it.link||"")}" placeholder="https://…"></div>
+     <div class="field"><label>Observações</label><textarea class="input" id="f_obs">${esc(it.observacoes||"")}</textarea></div>
+     ${it.opcoes&&it.opcoes.length?`<div class="field"><label>Opções pesquisadas (${it.opcoes.length})</label>
+       <div class="opt-list">${it.opcoes.map(o=>`<div class="opt ${o.fav?'fav':''}">
+         <span class="pr">${o.total!=null?money0(o.total):"—"}</span>
+         <span>${o.fav?"⭐ ":""}${esc(o.obs||"")}${o.unid?` <span class="muted">(${esc(o.unid)})</span>`:""} ${o.link?`<a href="${esc(o.link)}" target="_blank" rel="noopener">ver ${IC.ext}</a>`:""}</span>
+       </div>`).join("")}</div></div>`:""}
+   </div>
+   <div class="modal-foot">${!isNew?`<button class="btn danger" onclick="UI.delItem('${id}')">Excluir</button>`:""}<div style="flex:1"></div>
+     <button class="btn" onclick="UI._closeModal()">Cancelar</button>
+     <button class="btn primary" onclick="UI.saveItem('${id||""}')">Salvar</button></div>`);
+  setTimeout(()=>document.getElementById("f_desc").focus(),60);
+}
+function saveItem(id){
+  const g=k=>document.getElementById(k).value;
+  const obj={categoria:g("f_cat"),descricao:g("f_desc").trim(),prioridade:g("f_pri"),
+    valorEstimado:Number(g("f_est"))||0,valorReal:g("f_real")===""?null:Number(g("f_real")),
+    status:g("f_st"),unidade:g("f_unid").trim(),dataPrevista:g("f_prev"),dataCompra:g("f_comp"),
+    link:g("f_link").trim(),observacoes:g("f_obs").trim()};
+  if(!obj.descricao){toast("Informe a descrição");return;}
+  if(obj.status==="comprado"&&!obj.dataCompra)obj.dataCompra=new Date().toISOString().slice(0,10);
+  if(id){const it=S.items.find(x=>x.id===id);Object.assign(it,obj);}
+  else{obj.id=uid("it");obj.opcoes=[];S.items.push(obj);}
+  save();closeModal();render();toast("Item salvo ✓");
+}
+function editGuest(id){
+  const g=id?S.guests.find(x=>x.id===id):{nome:"",apelido:"",grupo:S.gruposConvidados[0],telefone:"",cidade:"",obs:"",tamanhoChinelo:"",conviteEnviado:false,conviteEntregue:false,status:"aguardando",acompanhantes:0,dataConfirmacao:"",vip:false};
+  const isNew=!id;
+  modal(`
+   <div class="modal-head"><h3>${isNew?"Novo convidado":"Editar convidado"}</h3><div style="flex:1"></div><button class="icon-btn" onclick="UI._closeModal()">✕</button></div>
+   <div class="modal-body">
+     <div class="form-row">
+       <div class="field"><label>Nome</label><input class="input" id="g_nome" value="${esc(g.nome)}"></div>
+       <div class="field"><label>Apelido (opcional)</label><input class="input" id="g_apel" value="${esc(g.apelido||"")}"></div>
+     </div>
+     <div class="form-row">
+       <div class="field"><label>Grupo / família</label><select class="input" id="g_grupo">${S.gruposConvidados.map(c=>`<option ${g.grupo===c?"selected":""}>${esc(c)}</option>`).join("")}</select></div>
+       <div class="field"><label>Telefone</label><input class="input" id="g_tel" value="${esc(g.telefone||"")}"></div>
+     </div>
+     <div class="form-row">
+       <div class="field"><label>Cidade</label><input class="input" id="g_cidade" value="${esc(g.cidade||"")}"></div>
+       <div class="field"><label>Tamanho de chinelo</label><input class="input" id="g_chin" value="${esc(g.tamanhoChinelo||"")}"></div>
+     </div>
+     <div class="form-row">
+       <div class="field"><label>Confirmação</label><select class="input" id="g_st"><option value="aguardando" ${g.status==="aguardando"?"selected":""}>Aguardando</option><option value="confirmado" ${g.status==="confirmado"?"selected":""}>Confirmado</option><option value="recusado" ${g.status==="recusado"?"selected":""}>Recusou</option></select></div>
+       <div class="field"><label>Nº de acompanhantes</label><input class="input" type="number" min="0" id="g_acomp" value="${g.acompanhantes||0}"></div>
+     </div>
+     <div class="form-row">
+       <div class="field"><label>Data da confirmação</label><input class="input" type="date" id="g_dataconf" value="${esc(g.dataConfirmacao||"")}"></div>
+       <div class="field" style="justify-content:center"><label class="row between" style="cursor:pointer">VIP / importante <label class="switch"><input type="checkbox" id="g_vip" ${g.vip?"checked":""}><span></span></label></label></div>
+     </div>
+     <div class="row" style="gap:20px;margin:4px 0 14px">
+       <label class="row" style="gap:8px;cursor:pointer"><input type="checkbox" id="g_env" ${g.conviteEnviado?"checked":""} style="width:18px;height:18px;accent-color:var(--accent)"> Convite enviado</label>
+       <label class="row" style="gap:8px;cursor:pointer"><input type="checkbox" id="g_ent" ${g.conviteEntregue?"checked":""} style="width:18px;height:18px;accent-color:var(--accent)"> Convite entregue</label>
+     </div>
+     <div class="field"><label>Observações</label><textarea class="input" id="g_obs">${esc(g.obs||"")}</textarea></div>
+   </div>
+   <div class="modal-foot">${!isNew?`<button class="btn danger" onclick="UI.delGuest('${id}')">Excluir</button>`:""}<div style="flex:1"></div>
+     <button class="btn" onclick="UI._closeModal()">Cancelar</button>
+     <button class="btn primary" onclick="UI.saveGuest('${id||""}')">Salvar</button></div>`);
+  setTimeout(()=>document.getElementById("g_nome").focus(),60);
+}
+function saveGuest(id){
+  const g=k=>document.getElementById(k).value,ck=k=>document.getElementById(k).checked;
+  const obj={nome:g("g_nome").trim(),apelido:g("g_apel").trim(),grupo:g("g_grupo"),telefone:g("g_tel").trim(),
+    cidade:g("g_cidade").trim(),tamanhoChinelo:g("g_chin").trim(),status:g("g_st"),acompanhantes:Number(g("g_acomp"))||0,
+    dataConfirmacao:g("g_dataconf"),vip:ck("g_vip"),conviteEnviado:ck("g_env"),conviteEntregue:ck("g_ent"),obs:g("g_obs").trim()};
+  if(!obj.nome){toast("Informe o nome");return;}
+  if(obj.status==="confirmado"&&!obj.dataConfirmacao)obj.dataConfirmacao=new Date().toISOString().slice(0,10);
+  if(id){Object.assign(S.guests.find(x=>x.id===id),obj);}else{obj.id=uid("g");S.guests.push(obj);}
+  save();closeModal();render();toast("Convidado salvo ✓");
+}
+
+/* ===================================================================
+   EXPORT module
+   =================================================================== */
+const Exp={
+  dl(content,name,type){const U=(typeof URL!=="undefined"?URL:window.URL);const b=new Blob([content],{type});const u=U.createObjectURL(b);
+    const a=document.createElement("a");a.href=u;a.download=name;a.click();setTimeout(()=>U.revokeObjectURL(u),2000);},
+  backup(){this.dl(JSON.stringify({config:S.config,categorias:S.categorias,gruposConvidados:S.gruposConvidados,items:S.items,guests:S.guests,_v:1,_exported:new Date().toISOString()},null,1),
+    "formatura-backup-"+new Date().toISOString().slice(0,10)+".json","application/json");toast("Backup baixado ✓");},
+  restore(file){if(!file)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);
+    if(!d.items&&!d.guests)throw 0;S=migrate(d);save();render();toast("Backup restaurado ✓");}catch(e){toast("Arquivo inválido");}};r.readAsText(file);},
+  async excel(scope,cat){
+    const XLSX=await loadXLSX();
+    if(!XLSX){return this.csvFallback(scope,cat);}
+    const wb=XLSX.utils.book_new();
+    if(scope==="itens"||scope==="tudo"||scope==="cat"){
+      let items=S.items;if(scope==="cat")items=items.filter(i=>i.categoria===cat);
+      const rows=items.map(i=>({Categoria:i.categoria,Descrição:i.descricao,Prioridade:PRI[i.prioridade].l,
+        "Valor estimado":Number(i.valorEstimado||0),"Valor real":i.valorReal==null?"":Number(i.valorReal),
+        Status:i.status==="comprado"?"Comprado":"Pendente",Unidades:i.unidade||"","Data prevista":i.dataPrevista||"",
+        "Data compra":i.dataCompra||"",Link:i.link||"",Observações:i.observacoes||""}));
+      XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),(scope==="cat"?cat.slice(0,28):"Itens"));
+    }
+    if(scope==="convidados"||scope==="tudo"){
+      const rows=S.guests.map(g=>({Nome:g.nome,Apelido:g.apelido||"",Grupo:g.grupo||"",Telefone:g.telefone||"",
+        Cidade:g.cidade||"","Tam. chinelo":g.tamanhoChinelo||"",Status:STL[g.status||"aguardando"],
+        Acompanhantes:Number(g.acompanhantes||0),"Convite enviado":g.conviteEnviado?"Sim":"Não",
+        "Convite entregue":g.conviteEntregue?"Sim":"Não",VIP:g.vip?"Sim":"Não","Data confirmação":g.dataConfirmacao||"",Observações:g.obs||""}));
+      XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),"Convidados");
+    }
+    XLSX.writeFile(wb,"formatura-"+scope+".xlsx");toast("Excel exportado ✓");
+    const sel=document.getElementById("expCat");if(sel)sel.value="";
+  },
+  csvFallback(scope,cat){
+    let rows,name;
+    if(scope==="convidados"){name="convidados";rows=[["Nome","Grupo","Telefone","Cidade","Status","Acompanhantes","VIP"],
+      ...S.guests.map(g=>[g.nome,g.grupo,g.telefone,g.cidade,STL[g.status||"aguardando"],g.acompanhantes||0,g.vip?"Sim":"Não"])];}
+    else{let items=S.items;if(scope==="cat"){items=items.filter(i=>i.categoria===cat);name=cat;}else name="itens";
+      rows=[["Categoria","Descrição","Prioridade","Valor estimado","Status","Data prevista","Link"],
+      ...items.map(i=>[i.categoria,i.descricao,PRI[i.prioridade].l,i.valorEstimado,i.status,i.dataPrevista,i.link])];}
+    const csv="﻿"+rows.map(r=>r.map(c=>`"${String(c==null?"":c).replace(/"/g,'""')}"`).join(";")).join("\n");
+    this.dl(csv,"formatura-"+name+".csv","text/csv");toast("Exportado em CSV (Excel offline) ✓");
+  }
+};
+function loadXLSX(){return new Promise(res=>{
+  if(window.XLSX)return res(window.XLSX);
+  const s=document.createElement("script");
+  s.src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+  s.onload=()=>res(window.XLSX);s.onerror=()=>res(null);
+  document.head.appendChild(s);setTimeout(()=>res(window.XLSX||null),6000);
+});}
+
+/* ===================================================================
+   REPORT (print → PDF) module
+   =================================================================== */
+const Report={
+  gen(kind){
+    const m=metrics();const sim=simulate();const gm=guestMetrics();const c=S.config;
+    const head=`<div class="r-head"><div><h2>${esc(c.nome||"Formatura")}</h2>
+      <div>${esc(c.curso||"")}${c.instituicao?" · "+esc(c.instituicao):""}${c.dataFormatura?" · Formatura: "+fmtDate(c.dataFormatura):""}</div></div>
+      <div style="text-align:right;font-size:11px;color:#888">Relatório ${kind}<br>${new Date().toLocaleDateString("pt-BR")}</div></div>`;
+    const kpis=`<div style="margin:6px 0 10px">
+      <span class="rk"><b>${m.pct}%</b><span>concluído</span></span>
+      <span class="rk"><b>${m.comprados.length}/${S.items.length}</b><span>itens</span></span>
+      <span class="rk"><b>${money0(m.totalPrevisto)}</b><span>total previsto</span></span>
+      <span class="rk"><b>${money0(m.gasto)}</b><span>já gasto</span></span>
+      <span class="rk"><b>${money0(m.pendenteVal)}</b><span>a gastar</span></span>
+      <span class="rk"><b>${money0(m.meta)}</b><span>meta</span></span></div>`;
+    let body="";
+    const itemsTable=(list,title)=>`<h3>${title} (${list.length})</h3><table><thead><tr><th>Item</th><th>Categoria</th><th>Prior.</th><th>Valor</th><th>Status</th><th>Prazo</th></tr></thead><tbody>${list.map(i=>`<tr><td>${esc(i.descricao)}</td><td>${esc(i.categoria)}</td><td>${PRI[i.prioridade].l}</td><td>${money0(itemVal(i))}</td><td>${i.status==="comprado"?"Comprado":"Pendente"}</td><td>${i.dataPrevista?fmtDate(i.dataPrevista):"-"}</td></tr>`).join("")}</tbody></table>`;
+    const schedule=()=>`<h3>Cronograma de compras (${money0(sim.saveMonth)}/mês)</h3><table><thead><tr><th>Mês</th><th>Compras</th><th>Valor</th><th>Saldo final</th></tr></thead><tbody>${sim.months.map(mo=>`<tr><td>${mo.labelFull}</td><td>${mo.buys.map(i=>esc(i.descricao)).join(", ")||"—"}</td><td>${money0(mo.buys.reduce((s,i)=>s+Number(i.valorEstimado),0))}</td><td>${money0(mo.after)}</td></tr>`).join("")}</tbody></table>${sim.finished?`<p>Conclusão prevista: <b>${monthLabelFull(sim.doneMonth)}</b>.</p>`:""}`;
+
+    if(kind==="completo"){
+      body=kpis+`<div style="display:flex;gap:20px;align-items:center;margin:8px 0">${donut(m.pct,150,"concluído")}
+        <div style="font-size:12px"><b>Próximos a comprar:</b><br>${purchaseQueue().slice(0,5).map(i=>esc(i.descricao)+" — "+money0(i.valorEstimado)).join("<br>")||"—"}</div></div>`
+        +itemsTable(S.items.filter(i=>i.status!=="comprado"),"Itens pendentes")
+        +itemsTable(S.items.filter(i=>i.status==="comprado"),"Itens comprados")
+        +schedule()
+        +`<h3>Convidados (${S.guests.length})</h3><p>Confirmados: ${gm.conf.length} · Recusaram: ${gm.rec.length} · Aguardando: ${gm.wait.length} · Total de pessoas: ${gm.totalPessoas}${gm.limite?"/"+gm.limite:""} · Custo: ${money0(gm.custo)}</p>`;
+    }else if(kind==="financeiro"){
+      body=kpis+schedule()+itemsTable(purchaseQueue(),"Fila de compras (prioridade)");
+    }else if(kind==="convidados"){
+      body=`<div style="margin:6px 0 10px"><span class="rk"><b>${S.guests.length}</b><span>convidados</span></span>
+        <span class="rk"><b>${gm.conf.length}</b><span>confirmados</span></span><span class="rk"><b>${gm.rec.length}</b><span>recusaram</span></span>
+        <span class="rk"><b>${gm.wait.length}</b><span>aguardando</span></span><span class="rk"><b>${gm.totalPessoas}</b><span>total pessoas</span></span>
+        <span class="rk"><b>${money0(gm.custo)}</b><span>custo</span></span></div>`
+        +`<h3>Lista de convidados</h3><table><thead><tr><th>Nome</th><th>Grupo</th><th>Telefone</th><th>Acomp.</th><th>Status</th></tr></thead><tbody>${filteredGuests().map(g=>`<tr><td>${esc(g.nome)}${g.vip?" ⭐":""}</td><td>${esc(g.grupo||"")}</td><td>${esc(g.telefone||"")}</td><td>${g.acompanhantes||0}</td><td>${STL[g.status||"aguardando"]}</td></tr>`).join("")}</tbody></table>`;
+    }
+    document.getElementById("report").innerHTML=head+body;
+    setTimeout(()=>window.print(),120);
+  }
+};
+
+/* ===================================================================
+   UI controller (exposed)
+   =================================================================== */
+function openNav(){document.getElementById("sidebar").classList.add("open");document.getElementById("scrim").classList.add("show");}
+function closeNav(){document.getElementById("sidebar").classList.remove("open");document.getElementById("scrim").classList.remove("show");}
+window.UI={
+  go(t){ui.tab=t;closeNav();render();window.scrollTo(0,0);},
+  openNav(){openNav();},
+  closeNav(){closeNav();},
+  toggleTheme(){const r=document.documentElement;const d=r.dataset.theme==="dark"?"light":"dark";r.dataset.theme=d;
+    try{localStorage.setItem("formaturaTheme",d);}catch(e){}render();},
+  setAccent(c){S.config.accent=c;applyAccent();save();render();},
+  itemView(v){ui.itemView=v;renderItemArea();document.querySelectorAll(".seg button").forEach(b=>{});render();},
+  guestView(v){ui.guestView=v;render();},
+  editItem(id){editItem(id);},saveItem(id){saveItem(id);},
+  delItem(id){if(confirm("Excluir este item?")){S.items=S.items.filter(x=>x.id!==id);save();closeModal();render();toast("Item excluído");}},
+  toggleBuy(id){const it=S.items.find(x=>x.id===id);it.status=it.status==="comprado"?"pendente":"comprado";
+    if(it.status==="comprado"&&!it.dataCompra)it.dataCompra=new Date().toISOString().slice(0,10);save();renderItemArea();render();},
+  editGuest(id){editGuest(id);},saveGuest(id){saveGuest(id);},
+  delGuest(id){if(confirm("Excluir este convidado?")){S.guests=S.guests.filter(x=>x.id!==id);save();closeModal();render();toast("Convidado excluído");}},
+  quickRsvp(id,st){const g=S.guests.find(x=>x.id===id);g.status=st;if(st==="confirmado"&&!g.dataConfirmacao)g.dataConfirmacao=new Date().toISOString().slice(0,10);save();render();},
+  _closeModal(){closeModal();},
+  setSim(v){ui.simSave=v;render();},
+  applySim(){S.config.economiaMensal=ui.simSave??S.config.economiaMensal;S.config.saldoAtual=ui.simStart??S.config.saldoAtual;save();toast("Salvo no perfil ✓");},
+  setMetaTotal(){S.config.metaFinanceira=Math.round(metrics().totalPrevisto);save();render();toast("Meta atualizada ✓");},
+  addCat(){const v=document.getElementById("newCat").value.trim();if(v&&!S.categorias.includes(v)){S.categorias.push(v);save();render();}},
+  delCat(c){if(S.items.some(i=>i.categoria===c)){if(!confirm("Há itens nesta categoria. Excluir mesmo assim? (os itens permanecem com o nome antigo)"))return;}
+    S.categorias=S.categorias.filter(x=>x!==c);save();render();},
+  addGrp(){const v=document.getElementById("newGrp").value.trim();if(v&&!S.gruposConvidados.includes(v)){S.gruposConvidados.push(v);save();render();}},
+  delGrp(g){S.gruposConvidados=S.gruposConvidados.filter(x=>x!==g);save();render();},
+  resetAll(){if(confirm("Apagar TUDO e começar em branco? Faça backup antes.")){
+    S={config:Object.assign(clone(SEED.config),{nome:"",curso:"",instituicao:"",dataFormatura:"",metaFinanceira:0,frase:"Rumo à formatura!"}),
+       categorias:clone(SEED.categorias),gruposConvidados:clone(SEED.gruposConvidados),items:[],guests:[]};
+    save();ui.tab="dash";render();toast("Novo planejamento criado");}},
+  resetSeed(){if(confirm("Restaurar os dados de exemplo (da planilha)? Seus dados atuais serão substituídos.")){
+    S=clone(SEED);save();ui.tab="dash";render();toast("Dados de exemplo restaurados");}}
+};
+window.Exp=Exp;window.Report=Report;
+
+/* ---------- accent + theme ---------- */
+function applyAccent(){
+  const c=S.config.accent;if(!c)return;
+  const root=document.documentElement.style;
+  root.setProperty("--accent",c);
+  // soft tint
+  root.setProperty("--accent-soft",hexA(c,document.documentElement.dataset.theme==="dark"?.18:.10));
+}
+function hexA(hex,a){const h=hex.replace("#","");const r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);
+  return `rgba(${r},${g},${b},${a})`;}
+
+/* ---------- boot ---------- */
+(function boot(){
+  try{const t=localStorage.getItem("formaturaTheme");if(t)document.documentElement.dataset.theme=t;}catch(e){}
+  applyAccent();
+  render();
+})();
+})();
+</script>
+</body>
+</html>
